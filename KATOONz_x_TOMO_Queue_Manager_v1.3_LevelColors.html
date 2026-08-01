@@ -1,0 +1,175 @@
+
+<!doctype html>
+<html lang="th">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<title>KATOONz x TOMO Queue Manager v1.3</title>
+<style>
+:root{--bg:#f3f6fa;--card:#fff;--text:#182230;--muted:#667085;--line:#d5dde7;--primary:#0f766e;--primary2:#115e59;--danger:#b42318;--play:#ecfdf3;--wait:#f8fafc;--drag:#dbeafe;--lv1-bg:#fff7cc;--lv1-border:#eab308;--lv1-text:#854d0e;--lv2-bg:#dbeafe;--lv2-border:#3b82f6;--lv2-text:#1e3a8a;--lv3-bg:#f3e8ff;--lv3-border:#a855f7;--lv3-text:#6b21a8}
+*{box-sizing:border-box}
+body{margin:0;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Tahoma,Arial,sans-serif;background:var(--bg);color:var(--text);touch-action:manipulation}
+header{background:linear-gradient(135deg,#0f766e,#0891b2);color:#fff;padding:17px;text-align:center;position:sticky;top:0;z-index:10}
+header h1{font-size:21px;margin:0 0 3px} header small{opacity:.9}
+main{max-width:1150px;margin:auto;padding:12px}
+.card{background:var(--card);border:1px solid #e8edf3;border-radius:15px;padding:13px;margin-bottom:12px}
+.row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}.grow{flex:1 1 170px}
+input,select,button{font:inherit}input,select{width:100%;padding:10px 11px;border:1px solid var(--line);border-radius:10px;background:#fff}
+button{border:0;border-radius:10px;padding:10px 12px;font-weight:700;cursor:pointer}
+.primary{background:var(--primary);color:#fff}.secondary{background:#e8eef5;color:#263548}.danger{background:#fee4e2;color:var(--danger)}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.stat{border:1px solid var(--line);border-radius:11px;padding:8px;text-align:center;background:#fafcff}.stat b{display:block;font-size:21px;color:var(--primary)}
+.layout{display:grid;grid-template-columns:.9fr 1.4fr;gap:12px}
+.waiting-zone{min-height:100px;border:2px dashed var(--line);border-radius:13px;padding:9px;background:var(--wait)}
+.waiting-zone.over,.slot.over{border-color:var(--primary);background:var(--drag)}
+.player-chip{display:flex;align-items:center;justify-content:space-between;gap:7px;padding:10px;margin:6px 0;border:2px solid var(--line);border-radius:11px;background:#fff;cursor:grab;user-select:none;-webkit-user-select:none;touch-action:none}.lv1{background:var(--lv1-bg)!important;border-color:var(--lv1-border)!important;color:var(--lv1-text)}.lv2{background:var(--lv2-bg)!important;border-color:var(--lv2-border)!important;color:var(--lv2-text)}.lv3{background:var(--lv3-bg)!important;border-color:var(--lv3-border)!important;color:var(--lv3-text)}
+.player-chip.dragging{opacity:.45}.chip-main{font-weight:800}.badge{font-size:12px;padding:3px 7px;border-radius:999px;background:#e0f2fe;color:#075985}
+.court{border:1px solid var(--line);border-radius:14px;padding:11px;margin-bottom:10px}
+.court-head{display:flex;gap:8px;align-items:center;margin-bottom:9px}.court-head input{font-weight:800}
+.slots{display:grid;grid-template-columns:1fr 1fr;gap:8px;align-items:center}
+.slot{min-height:70px;border:2px dashed var(--line);border-radius:12px;padding:9px;background:#fff;display:flex;align-items:center;justify-content:center;text-align:center}
+.slot.filled{border-style:solid;background:var(--play);cursor:grab;touch-action:none}
+.vs{grid-column:1/-1;text-align:center;color:var(--muted);font-size:12px;font-weight:800;margin:-2px 0}
+.slot-name{font-size:17px;font-weight:800}.slot-meta{font-size:12px;color:var(--muted);margin-top:3px}
+.actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}.actions button{flex:1 1 115px}
+.hint{font-size:13px;color:var(--muted);line-height:1.45}.empty{padding:14px;text-align:center;color:var(--muted)}
+.drag-ghost{position:fixed;z-index:9999;pointer-events:none;padding:10px 13px;border-radius:10px;background:var(--primary);color:#fff;font-weight:800;box-shadow:0 8px 24px #0003;transform:translate(-50%,-50%)}
+@media(max-width:820px){.layout{grid-template-columns:1fr}}
+@media(max-width:480px){header h1{font-size:18px}.slots{gap:6px}.slot{min-height:66px}.slot-name{font-size:15px}.actions button{flex:1 1 45%}}
+</style>
+</head>
+<body>
+<header><h1>🏸 KATOONz x TOMO Queue Manager</h1><small>Offline Edition v1.3 · Level Colors</small></header>
+<main>
+<section class="card">
+  <div class="stats">
+    <div class="stat">ผู้เล่น<b id="sAll">0</b></div>
+    <div class="stat">กำลังเล่น<b id="sPlay">0</b></div>
+    <div class="stat">พัก<b id="sRest">0</b></div>
+  </div>
+</section>
+
+<section class="card">
+  <div class="row">
+    <div class="grow"><input id="newName" placeholder="ชื่อผู้เล่น"></div>
+    <div style="width:100px"><select id="newLv"><option value="1">Lv.1</option><option value="2" selected>Lv.2</option><option value="3">Lv.3</option></select></div>
+    <button id="addBtn" class="primary">➕ เพิ่มผู้เล่น</button>
+  </div>
+  <div class="row" style="margin-top:9px">
+    <b>จำนวนคอร์ท</b>
+    <div style="width:95px"><select id="courtCount"><option>1</option><option selected>2</option><option>3</option><option>4</option><option>5</option><option>6</option></select></div>
+    <button id="resetGames" class="secondary">รีเซ็ตจำนวนเกม</button>
+    <button id="resetAll" class="danger">ล้างข้อมูล</button>
+  </div>
+  <div class="hint">ลากชื่อคนพักไปทับผู้เล่นในคอร์ทเพื่อเปลี่ยนตัว หรือลากผู้เล่นในคอร์ทไปทับกันเพื่อสลับตำแหน่งได้ทันที</div>
+</section>
+
+<div class="layout">
+  <section class="card">
+    <h2 style="margin-top:0;font-size:18px">คนพัก</h2>
+    <div id="waiting" class="waiting-zone"></div>
+  </section>
+  <section class="card">
+    <h2 style="margin-top:0;font-size:18px">คอร์ท</h2>
+    <div id="courts"></div>
+  </section>
+</div>
+</main>
+
+<script>
+const KEY="katoonz_tomo_v12";
+function defaults(){return{players:[
+{id:1,name:"K'T",lv:3,games:0,status:"พัก"},{id:2,name:"NT",lv:2,games:0,status:"พัก"},
+{id:3,name:"TE'",lv:3,games:0,status:"พัก"},{id:4,name:"BG",lv:1,games:0,status:"พัก"},
+{id:5,name:"FM",lv:3,games:0,status:"พัก"},{id:6,name:"WP",lv:2,games:0,status:"พัก"},
+{id:7,name:"JN",lv:1,games:0,status:"พัก"},{id:8,name:"CP",lv:3,games:0,status:"พัก"},
+{id:9,name:"ND",lv:2,games:0,status:"พัก"},{id:10,name:"OLF",lv:2,games:0,status:"พัก"},
+{id:11,name:"TE",lv:3,games:0,status:"พัก"},{id:12,name:"DM",lv:2,games:0,status:"พัก"}],
+courtCount:2,courts:[{id:1,name:"5",slots:[null,null,null,null]},{id:2,name:"6",slots:[null,null,null,null]}]}}
+let state;try{state=JSON.parse(localStorage.getItem(KEY))||defaults()}catch(e){state=defaults()}
+let drag={playerId:null,sourceCourt:null,sourceSlot:null,ghost:null};
+const $=s=>document.querySelector(s);
+function save(){localStorage.setItem(KEY,JSON.stringify(state))}
+function player(id){return state.players.find(p=>p.id===id)}
+function nextId(){return Math.max(0,...state.players.map(p=>p.id))+1}
+function syncStatuses(){state.players.forEach(p=>p.status="พัก");state.courts.forEach(c=>c.slots.forEach(id=>{if(id&&player(id))player(id).status="เล่น"}))}
+function addPlayer(){const n=$("#newName").value.trim();if(!n)return alert("กรุณาใส่ชื่อ");state.players.push({id:nextId(),name:n,lv:+$("#newLv").value,games:0,status:"พัก"});$("#newName").value="";save();render()}
+function removePlayer(id){const p=player(id);if(p.status==="เล่น")return alert("ผู้เล่นกำลังเล่นอยู่");if(confirm("ลบ "+p.name+" ?")){state.players=state.players.filter(x=>x.id!==id);save();render()}}
+function editPlayer(id){const p=player(id);const n=prompt("ชื่อใหม่",p.name);if(n===null)return;const l=prompt("Level 1-3",p.lv);if(n.trim())p.name=n.trim();if(["1","2","3"].includes(l))p.lv=+l;save();render()}
+function changeCourtCount(){const n=+$("#courtCount").value;if(state.courts.some(c=>c.slots.some(Boolean))&&!confirm("คอร์ทกำลังใช้งาน ต้องการเปลี่ยนจำนวนคอร์ทหรือไม่?")){render();return}state.courts.forEach(c=>c.slots.forEach(id=>{if(id&&player(id))player(id).status="พัก"}));const old=state.courts;state.courtCount=n;state.courts=Array.from({length:n},(_,i)=>({id:i+1,name:old[i]?.name||String(i+1),slots:[null,null,null,null]}));save();render()}
+function chooseFour(){const a=state.players.filter(p=>p.status==="พัก").sort((x,y)=>x.games-y.games||y.lv-x.lv);if(a.length<4)return null;const pool=a.slice(0,Math.min(8,a.length));let best=null,d=999;for(let i=0;i<pool.length;i++)for(let j=i+1;j<pool.length;j++)for(let k=j+1;k<pool.length;k++)for(let m=k+1;m<pool.length;m++){const q=[pool[i],pool[j],pool[k],pool[m]],pairs=[ [q[0],q[1],q[2],q[3]],[q[0],q[2],q[1],q[3]],[q[0],q[3],q[1],q[2]] ];pairs.forEach(z=>{const x=Math.abs((z[0].lv+z[1].lv)-(z[2].lv+z[3].lv));if(x<d){d=x;best=z}})}return best}
+function startCourt(cid){const c=state.courts.find(x=>x.id===cid);if(c.slots.some(Boolean))return alert("คอร์ทนี้กำลังใช้งาน");const pick=chooseFour();if(!pick)return alert("คนพักไม่ถึง 4 คน");c.slots=pick.map(p=>p.id);pick.forEach(p=>p.games++);syncStatuses();save();render()}
+function endCourt(cid){const c=state.courts.find(x=>x.id===cid);c.slots=[null,null,null,null];syncStatuses();save();render()}
+function rotate(cid){const c=state.courts.find(x=>x.id===cid);if(c.slots.some(x=>!x))return;const[a,b,d,e]=c.slots;c.slots=[a,d,b,e];save();render()}
+function setCourtName(cid,val){state.courts.find(x=>x.id===cid).name=val.trim()||String(cid);save()}
+function movePlayer(targetCourt,targetSlot){
+ if(!drag.playerId)return;
+ const sourceC=drag.sourceCourt?state.courts.find(c=>c.id===drag.sourceCourt):null;
+ const targetC=targetCourt?state.courts.find(c=>c.id===targetCourt):null;
+ const targetId=targetC?targetC.slots[targetSlot]:null;
+ if(targetC){
+   targetC.slots[targetSlot]=drag.playerId;
+   if(sourceC)sourceC.slots[drag.sourceSlot]=targetId||null;
+   else if(targetId){const tp=player(targetId);if(tp)tp.status="พัก"}
+ }else if(sourceC){
+   sourceC.slots[drag.sourceSlot]=null;
+ }
+ syncStatuses();save();render();
+}
+function beginDrag(el,e){
+ const pid=+el.dataset.playerId;drag.playerId=pid;drag.sourceCourt=el.dataset.court?+el.dataset.court:null;drag.sourceSlot=el.dataset.slot!==undefined&&el.dataset.slot!==""?+el.dataset.slot:null;
+ el.classList.add("dragging");
+ if(e.type==="touchstart"){const g=document.createElement("div");g.className="drag-ghost";g.textContent=player(pid).name;document.body.appendChild(g);drag.ghost=g;moveGhost(e.touches[0]);document.addEventListener("touchmove",touchMove,{passive:false});document.addEventListener("touchend",touchEnd,{once:true})}
+}
+function moveGhost(t){if(drag.ghost){drag.ghost.style.left=t.clientX+"px";drag.ghost.style.top=t.clientY+"px"}}
+function touchMove(e){e.preventDefault();moveGhost(e.touches[0]);document.querySelectorAll(".over").forEach(x=>x.classList.remove("over"));const el=document.elementFromPoint(e.touches[0].clientX,e.touches[0].clientY);const zone=el&&el.closest("[data-drop]");if(zone)zone.classList.add("over")}
+function touchEnd(e){document.removeEventListener("touchmove",touchMove);const t=e.changedTouches[0];const el=document.elementFromPoint(t.clientX,t.clientY);const zone=el&&el.closest("[data-drop]");if(zone){if(zone.dataset.drop==="waiting")movePlayer(null,null);else movePlayer(+zone.dataset.court,+zone.dataset.slot)}cleanupDrag()}
+function cleanupDrag(){document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"));if(drag.ghost)drag.ghost.remove();drag={playerId:null,sourceCourt:null,sourceSlot:null,ghost:null}}
+function wireDrag(){
+ document.querySelectorAll("[data-player-id]").forEach(el=>{
+   el.setAttribute("draggable","true");
+   el.addEventListener("dragstart",e=>{beginDrag(el,e);e.dataTransfer.setData("text/plain",el.dataset.playerId)});
+   el.addEventListener("dragend",cleanupDrag);
+   el.addEventListener("touchstart",e=>beginDrag(el,e),{passive:true});
+ });
+ document.querySelectorAll("[data-drop]").forEach(zone=>{
+   zone.addEventListener("dragover",e=>{e.preventDefault();zone.classList.add("over")});
+   zone.addEventListener("dragleave",()=>zone.classList.remove("over"));
+   zone.addEventListener("drop",e=>{e.preventDefault();if(zone.dataset.drop==="waiting")movePlayer(null,null);else movePlayer(+zone.dataset.court,+zone.dataset.slot);cleanupDrag()});
+ });
+}
+function renderWaiting(){
+ const w=$("#waiting"),arr=state.players.filter(p=>p.status==="พัก").sort((a,b)=>a.games-b.games||a.name.localeCompare(b.name));
+ w.innerHTML=arr.length?arr.map(p=>`<div class="player-chip lv${p.lv}" data-player-id="${p.id}"><div><span class="chip-main">${esc(p.name)}</span> <span class="badge">Lv.${p.lv}</span><div style="font-size:12px;color:var(--muted)">เกม ${p.games}</div></div><div><button class="secondary edit" data-id="${p.id}">แก้ไข</button> <button class="danger remove" data-id="${p.id}">ลบ</button></div></div>`).join(""):'<div class="empty">ไม่มีคนพัก</div>';
+ w.dataset.drop="waiting";
+}
+function renderCourts(){
+ $("#courts").innerHTML=state.courts.map(c=>`<div class="court">
+ <div class="court-head"><span>คอร์ท</span><input class="court-name" data-id="${c.id}" value="${attr(c.name)}"></div>
+ <div class="slots">
+ ${slotHtml(c,0)}${slotHtml(c,1)}<div class="vs">VS</div>${slotHtml(c,2)}${slotHtml(c,3)}
+ </div>
+ <div class="actions"><button class="primary start" data-id="${c.id}">▶ เรียกผู้เล่น</button><button class="secondary rotate" data-id="${c.id}">🔄 เปลี่ยนคู่</button><button class="danger end" data-id="${c.id}">■ จบเกม</button></div>
+ </div>`).join("");
+}
+function slotHtml(c,i){const p=player(c.slots[i]);return `<div class="slot ${p?`filled lv${p.lv}`:""}" data-drop="slot" data-court="${c.id}" data-slot="${i}" ${p?`data-player-id="${p.id}"`:""}>${p?`<div><div class="slot-name">${esc(p.name)}</div><div class="slot-meta">Lv.${p.lv} · เกม ${p.games}</div></div>`:'ลากผู้เล่นมาวาง'}</div>`}
+function bind(){
+ $("#addBtn").onclick=addPlayer;$("#newName").onkeydown=e=>{if(e.key==="Enter")addPlayer()};
+ $("#courtCount").onchange=changeCourtCount;
+ $("#resetGames").onclick=()=>{if(confirm("รีเซ็ตจำนวนเกมทั้งหมด?")){state.players.forEach(p=>p.games=0);save();render()}};
+ $("#resetAll").onclick=()=>{if(confirm("ล้างข้อมูลทั้งหมด?")){state=defaults();save();render()}};
+ document.querySelectorAll(".edit").forEach(b=>b.onclick=()=>editPlayer(+b.dataset.id));
+ document.querySelectorAll(".remove").forEach(b=>b.onclick=()=>removePlayer(+b.dataset.id));
+ document.querySelectorAll(".start").forEach(b=>b.onclick=()=>startCourt(+b.dataset.id));
+ document.querySelectorAll(".rotate").forEach(b=>b.onclick=()=>rotate(+b.dataset.id));
+ document.querySelectorAll(".end").forEach(b=>b.onclick=()=>endCourt(+b.dataset.id));
+ document.querySelectorAll(".court-name").forEach(x=>x.onchange=()=>setCourtName(+x.dataset.id,x.value));
+ wireDrag();
+}
+function render(){syncStatuses();$("#courtCount").value=state.courtCount;renderWaiting();renderCourts();$("#sAll").textContent=state.players.length;$("#sPlay").textContent=state.players.filter(p=>p.status==="เล่น").length;$("#sRest").textContent=state.players.filter(p=>p.status==="พัก").length;bind()}
+function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[m]))}
+function attr(s){return esc(s)}
+render();
+</script>
+</body>
+</html>
