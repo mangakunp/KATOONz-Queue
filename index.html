@@ -15,7 +15,7 @@
 <body>
   <header>
     <h1>🏸 KATOONz x TOMO Queue Manager</h1>
-    <small>v2.2 PWA Offline · Full Reset</small>
+    <small>v2.4 PWA Offline · Tap to Replace</small>
   </header>
 
   <main>
@@ -43,11 +43,12 @@
           <option>4</option><option>5</option><option>6</option>
         </select>
         <button id="resetGames" class="secondary">รีเซ็ตจำนวนเกม</button>
-        <button id="resetAll" class="danger">ล้างข้อมูลทั้งหมด</button>
+        <button id="newSession" class="secondary">🏸 เริ่มก๊วนใหม่</button>
+        <button id="factoryReset" class="danger">ล้างระบบทั้งหมด</button>
       </div>
 
       <p class="hint">
-        ลากชื่อคนพักไปทับผู้เล่นในคอร์ทเพื่อเปลี่ยนตัว
+        ปุ่ม “เริ่มก๊วนใหม่” จะเก็บรายชื่อโปรดไว้ แต่ล้างผู้เล่นวันนี้ เกม และคอร์ท
         ลากผู้เล่นข้ามคอร์ท หรือกลับไปพื้นที่คนพักได้
       </p>
     </section>
@@ -75,6 +76,18 @@
       </section>
     </div>
   </main>
+
+  <div id="replaceModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="replaceTitle">
+      <div class="modal-head">
+        <h2 id="replaceTitle">เปลี่ยนผู้เล่น</h2>
+        <button id="closeReplace" class="secondary compact">ปิด</button>
+      </div>
+      <p id="replaceCurrent" class="hint"></p>
+      <div id="availablePlayers" class="available-list"></div>
+    </section>
+  </div>
 
   <script src="app.js"></script>
 </body>

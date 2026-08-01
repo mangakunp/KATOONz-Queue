@@ -52,6 +52,7 @@ let state;
 try{state=JSON.parse(localStorage.getItem(KEY))||defaults()}catch{state=defaults()}
 if(!Array.isArray(state.favorites))state.favorites=[];
 let drag={playerId:null,sourceCourt:null,sourceSlot:null,ghost:null};
+let replaceTarget={courtId:null,slotIndex:null};
 
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function player(id){return state.players.find(p=>p.id===id)}
@@ -230,13 +231,67 @@ function touchEnd(e){
   cleanupDrag();
 }
 function cleanupDrag(){
+  window.__justDragged=true;
+  setTimeout(()=>window.__justDragged=false,250);
   document.querySelectorAll(".dragging,.over").forEach(x=>x.classList.remove("dragging","over"));
   drag.ghost?.remove();
   drag={playerId:null,sourceCourt:null,sourceSlot:null,ghost:null};
 }
+
+function openReplaceModal(courtId,slotIndex){
+  const c=state.courts.find(x=>x.id===courtId);
+  const currentId=c?.slots?.[slotIndex];
+  const current=currentId?player(currentId):null;
+  if(!current)return;
+
+  replaceTarget={courtId,slotIndex};
+  $("#replaceCurrent").textContent="กำลังเปลี่ยน: "+current.name+" (Lv."+current.lv+")";
+
+  const available=state.players
+    .filter(p=>p.status==="พัก")
+    .sort((a,b)=>a.games-b.games||a.name.localeCompare(b.name));
+
+  $("#availablePlayers").innerHTML=available.length
+    ? available.map(p=>`
+      <div class="available-player lv${p.lv}">
+        <button class="replace-choice" data-id="${p.id}">
+          <div><b>${esc(p.name)}</b> <span class="badge">Lv.${p.lv}</span></div>
+          <div class="slot-meta">เกม ${p.games}</div>
+        </button>
+      </div>`).join("")
+    : '<div class="empty">ไม่มีผู้เล่นว่าง</div>';
+
+  $("#replaceModal").classList.remove("hidden");
+  $("#replaceModal").setAttribute("aria-hidden","false");
+  document.querySelectorAll(".replace-choice").forEach(b=>{
+    b.onclick=()=>replaceWithPlayer(+b.dataset.id);
+  });
+}
+function closeReplaceModal(){
+  $("#replaceModal").classList.add("hidden");
+  $("#replaceModal").setAttribute("aria-hidden","true");
+  replaceTarget={courtId:null,slotIndex:null};
+}
+function replaceWithPlayer(newPlayerId){
+  const c=state.courts.find(x=>x.id===replaceTarget.courtId);
+  if(!c)return;
+  const oldId=c.slots[replaceTarget.slotIndex];
+  c.slots[replaceTarget.slotIndex]=newPlayerId;
+
+  const oldP=player(oldId);
+  const newP=player(newPlayerId);
+  if(oldP)oldP.status="พัก";
+  if(newP)newP.status="เล่น";
+
+  syncStatuses();
+  save();
+  closeReplaceModal();
+  render();
+}
+
 function slotHtml(c,i){
   const p=player(c.slots[i]);
-  return `<div class="slot ${p?`filled lv${p.lv}`:""}" data-drop="slot" data-court="${c.id}" data-slot="${i}" ${p?`data-player-id="${p.id}"`:""}>
+  return `<div class="slot ${p?`filled lv${p.lv}`:""}" data-drop="slot" data-court="${c.id}" data-slot="${i}" ${p?`data-player-id="${p.id}" data-tap-replace="1"`:""}>
     ${p?`<div><div class="slot-name">${esc(p.name)}</div><div class="slot-meta">Lv.${p.lv} · เกม ${p.games}</div></div>`:"ลากผู้เล่นมาวาง"}
   </div>`;
 }
@@ -308,12 +363,27 @@ function wireDrag(){
 }
 function bind(){
   $("#addPlayer").onclick=addPlayer;
+  $("#closeReplace").onclick=closeReplaceModal;
+  $("#replaceModal .modal-backdrop").onclick=closeReplaceModal;
   $("#addAllFavorites").onclick=addAllFavorites;
   $("#newName").onkeydown=e=>{if(e.key==="Enter")addPlayer()};
   $("#courtCount").onchange=changeCourtCount;
   $("#resetGames").onclick=()=>{if(confirm("รีเซ็ตจำนวนเกมทั้งหมด?")){state.players.forEach(p=>p.games=0);save();render()}};
-  $("#resetAll").onclick=()=>{
-    if(confirm("ต้องการลบผู้เล่น จำนวนเกม รายชื่อโปรด และคอร์ททั้งหมด แล้วเริ่มใหม่จากหน้าว่างใช่หรือไม่?")){
+  $("#newSession").onclick=()=>{
+    if(confirm("เริ่มก๊วนใหม่ใช่หรือไม่? ระบบจะล้างผู้เล่นวันนี้ จำนวนเกม และคอร์ท แต่จะเก็บรายชื่อโปรดไว้")){
+      const savedFavorites=Array.isArray(state.favorites)?state.favorites:[];
+      state={
+        players:[],
+        favorites:savedFavorites,
+        courtCount:0,
+        courts:[]
+      };
+      save();
+      render();
+    }
+  };
+  $("#factoryReset").onclick=()=>{
+    if(confirm("ล้างระบบทั้งหมดใช่หรือไม่? การดำเนินการนี้จะลบผู้เล่น รายชื่อโปรด จำนวนเกม และคอร์ททั้งหมด")){
       state=emptyState();
       save();
       render();
@@ -329,6 +399,18 @@ function bind(){
   document.querySelectorAll(".rotate").forEach(b=>b.onclick=()=>rotate(+b.dataset.id));
   document.querySelectorAll(".end").forEach(b=>b.onclick=()=>endCourt(+b.dataset.id));
   document.querySelectorAll(".court-name").forEach(x=>x.onchange=()=>setCourtName(+x.dataset.id,x.value));
+  document.querySelectorAll('[data-tap-replace="1"]').forEach(el=>{
+    let touchMoved=false;
+    el.addEventListener("touchmove",()=>{touchMoved=true},{passive:true});
+    el.addEventListener("touchend",()=>{
+      if(!touchMoved)openReplaceModal(+el.dataset.court,+el.dataset.slot);
+      touchMoved=false;
+    });
+    el.addEventListener("click",e=>{
+      if(e.detail===0)return;
+      if(!window.__justDragged)openReplaceModal(+el.dataset.court,+el.dataset.slot);
+    });
+  });
   wireDrag();
 }
 function render(){
