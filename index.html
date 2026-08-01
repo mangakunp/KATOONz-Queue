@@ -15,7 +15,7 @@
 <body>
   <header>
     <h1>🏸 KATOONz x TOMO Queue Manager</h1>
-    <small>v2.0 PWA Offline</small>
+    <small>v2.2 PWA Offline · Full Reset</small>
   </header>
 
   <main>
@@ -39,7 +39,7 @@
       <div class="row top-gap">
         <label>จำนวนคอร์ท</label>
         <select id="courtCount">
-          <option>1</option><option selected>2</option><option>3</option>
+          <option value="0">0</option><option>1</option><option selected>2</option><option>3</option>
           <option>4</option><option>5</option><option>6</option>
         </select>
         <button id="resetGames" class="secondary">รีเซ็ตจำนวนเกม</button>
@@ -53,9 +53,20 @@
     </section>
 
     <div class="layout">
-      <section class="card">
-        <h2>คนพัก</h2>
-        <div id="waiting" class="waiting-zone" data-drop="waiting"></div>
+      <section>
+        <section class="card">
+          <div class="section-head">
+            <h2>รายชื่อโปรด ⭐</h2>
+            <button id="addAllFavorites" class="secondary compact">เพิ่มทั้งหมด</button>
+          </div>
+          <div id="favorites" class="favorites-zone"></div>
+          <p class="hint">กดดาวข้างชื่อผู้เล่นเพื่อบันทึกไว้ถาวร ครั้งต่อไปแตะ “เพิ่มวันนี้” ได้ทันที</p>
+        </section>
+
+        <section class="card">
+          <h2>คนพัก</h2>
+          <div id="waiting" class="waiting-zone" data-drop="waiting"></div>
+        </section>
       </section>
 
       <section class="card">

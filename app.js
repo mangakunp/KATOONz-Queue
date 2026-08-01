@@ -1,6 +1,15 @@
 const KEY="katoonz_tomo_v2";
 const $=s=>document.querySelector(s);
 
+function emptyState(){
+  return{
+    players:[],
+    favorites:[],
+    courtCount:0,
+    courts:[]
+  };
+}
+
 function defaults(){
   return{
     players:[
@@ -17,6 +26,20 @@ function defaults(){
       {id:11,name:"TE",lv:3,games:0,status:"พัก"},
       {id:12,name:"DM",lv:2,games:0,status:"พัก"}
     ],
+    favorites:[
+      {id:101,name:"K'T",lv:3},
+      {id:102,name:"NT",lv:2},
+      {id:103,name:"TE'",lv:3},
+      {id:104,name:"BG",lv:1},
+      {id:105,name:"FM",lv:3},
+      {id:106,name:"WP",lv:2},
+      {id:107,name:"JN",lv:1},
+      {id:108,name:"CP",lv:3},
+      {id:109,name:"ND",lv:2},
+      {id:110,name:"OLF",lv:2},
+      {id:111,name:"TE",lv:3},
+      {id:112,name:"DM",lv:2}
+    ],
     courtCount:2,
     courts:[
       {id:1,name:"5",slots:[null,null,null,null]},
@@ -27,6 +50,7 @@ function defaults(){
 
 let state;
 try{state=JSON.parse(localStorage.getItem(KEY))||defaults()}catch{state=defaults()}
+if(!Array.isArray(state.favorites))state.favorites=[];
 let drag={playerId:null,sourceCourt:null,sourceSlot:null,ghost:null};
 
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
@@ -62,6 +86,57 @@ function removePlayer(id){
     save();render();
   }
 }
+
+function isFavoriteName(name){
+  return state.favorites.some(f=>f.name.trim().toLowerCase()===name.trim().toLowerCase());
+}
+function toggleFavorite(id){
+  const p=player(id);
+  if(!p)return;
+  const idx=state.favorites.findIndex(f=>f.name.trim().toLowerCase()===p.name.trim().toLowerCase());
+  if(idx>=0)state.favorites.splice(idx,1);
+  else state.favorites.push({id:Date.now(),name:p.name,lv:p.lv});
+  save();render();
+}
+function addFavoriteToday(fid){
+  const f=state.favorites.find(x=>x.id===fid);
+  if(!f)return;
+  const exists=state.players.some(p=>p.name.trim().toLowerCase()===f.name.trim().toLowerCase());
+  if(exists)return alert(f.name+" อยู่ในรายชื่อวันนี้แล้ว");
+  state.players.push({id:nextId(),name:f.name,lv:f.lv,games:0,status:"พัก"});
+  save();render();
+}
+function removeFavorite(fid){
+  const f=state.favorites.find(x=>x.id===fid);
+  if(!f)return;
+  if(confirm("ลบ "+f.name+" ออกจากรายชื่อโปรด?")){
+    state.favorites=state.favorites.filter(x=>x.id!==fid);
+    save();render();
+  }
+}
+function editFavorite(fid){
+  const f=state.favorites.find(x=>x.id===fid);
+  if(!f)return;
+  const name=prompt("ชื่อในรายชื่อโปรด",f.name);
+  if(name===null)return;
+  const lv=prompt("Level 1-3",f.lv);
+  if(name.trim())f.name=name.trim();
+  if(["1","2","3"].includes(lv))f.lv=+lv;
+  save();render();
+}
+function addAllFavorites(){
+  let added=0;
+  state.favorites.forEach(f=>{
+    const exists=state.players.some(p=>p.name.trim().toLowerCase()===f.name.trim().toLowerCase());
+    if(!exists){
+      state.players.push({id:nextId(),name:f.name,lv:f.lv,games:0,status:"พัก"});
+      added++;
+    }
+  });
+  save();render();
+  if(!added)alert("รายชื่อโปรดทั้งหมดอยู่ในรายชื่อวันนี้แล้ว");
+}
+
 function changeCourtCount(){
   const n=+$("#courtCount").value;
   if(state.courts.some(c=>c.slots.some(Boolean))&&!confirm("มีคอร์ทกำลังเล่นอยู่ ต้องการเปลี่ยนจำนวนคอร์ทหรือไม่?")){
@@ -165,15 +240,43 @@ function slotHtml(c,i){
     ${p?`<div><div class="slot-name">${esc(p.name)}</div><div class="slot-meta">Lv.${p.lv} · เกม ${p.games}</div></div>`:"ลากผู้เล่นมาวาง"}
   </div>`;
 }
+
+function renderFavorites(){
+  const box=$("#favorites");
+  if(!state.favorites.length){
+    box.innerHTML='<div class="empty">ยังไม่มีรายชื่อโปรด</div>';
+    return;
+  }
+  const sorted=state.favorites.slice().sort((a,b)=>a.name.localeCompare(b.name));
+  box.innerHTML=sorted.map(f=>{
+    const today=state.players.some(p=>p.name.trim().toLowerCase()===f.name.trim().toLowerCase());
+    return `<div class="favorite-item lv${f.lv}">
+      <div class="favorite-main">
+        <span class="star-btn">★</span>
+        <div><div class="favorite-name">${esc(f.name)}</div><div class="slot-meta">Lv.${f.lv}${today?" · อยู่ในวันนี้แล้ว":""}</div></div>
+      </div>
+      <div class="favorite-actions">
+        <button class="primary fav-add" data-id="${f.id}" ${today?"disabled":""}>เพิ่มวันนี้</button>
+        <button class="secondary fav-edit" data-id="${f.id}">แก้ไข</button>
+        <button class="danger fav-remove" data-id="${f.id}">ลบดาว</button>
+      </div>
+    </div>`;
+  }).join("");
+}
+
 function renderWaiting(){
   const arr=state.players.filter(p=>p.status==="พัก").sort((a,b)=>a.games-b.games||a.name.localeCompare(b.name));
   $("#waiting").innerHTML=arr.length?arr.map(p=>`
     <div class="player-chip lv${p.lv}" data-player-id="${p.id}">
       <div><span class="chip-main">${esc(p.name)}</span> <span class="badge">Lv.${p.lv}</span><div class="slot-meta">เกม ${p.games}</div></div>
-      <div><button class="secondary edit" data-id="${p.id}">แก้ไข</button> <button class="danger remove" data-id="${p.id}">ลบ</button></div>
+      <div><button class="star-btn ${isFavoriteName(p.name)?"":"off"} favorite-toggle" data-id="${p.id}" title="บันทึกรายชื่อโปรด">${isFavoriteName(p.name)?"★":"☆"}</button> <button class="secondary edit" data-id="${p.id}">แก้ไข</button> <button class="danger remove" data-id="${p.id}">ลบ</button></div>
     </div>`).join(""):'<div class="empty">ไม่มีคนพัก</div>';
 }
 function renderCourts(){
+  if(!state.courts.length){
+    $("#courts").innerHTML='<div class="empty">ยังไม่มีคอร์ท กรุณาเลือกจำนวนคอร์ทด้านบน</div>';
+    return;
+  }
   $("#courts").innerHTML=state.courts.map(c=>`
     <div class="court">
       <div class="court-head"><span>คอร์ท</span><input class="court-name" data-id="${c.id}" value="${esc(c.name)}"></div>
@@ -205,10 +308,21 @@ function wireDrag(){
 }
 function bind(){
   $("#addPlayer").onclick=addPlayer;
+  $("#addAllFavorites").onclick=addAllFavorites;
   $("#newName").onkeydown=e=>{if(e.key==="Enter")addPlayer()};
   $("#courtCount").onchange=changeCourtCount;
   $("#resetGames").onclick=()=>{if(confirm("รีเซ็ตจำนวนเกมทั้งหมด?")){state.players.forEach(p=>p.games=0);save();render()}};
-  $("#resetAll").onclick=()=>{if(confirm("ล้างข้อมูลทั้งหมด?")){state=defaults();save();render()}};
+  $("#resetAll").onclick=()=>{
+    if(confirm("ต้องการลบผู้เล่น จำนวนเกม รายชื่อโปรด และคอร์ททั้งหมด แล้วเริ่มใหม่จากหน้าว่างใช่หรือไม่?")){
+      state=emptyState();
+      save();
+      render();
+    }
+  };
+  document.querySelectorAll(".favorite-toggle").forEach(b=>b.onclick=()=>toggleFavorite(+b.dataset.id));
+  document.querySelectorAll(".fav-add").forEach(b=>b.onclick=()=>addFavoriteToday(+b.dataset.id));
+  document.querySelectorAll(".fav-edit").forEach(b=>b.onclick=()=>editFavorite(+b.dataset.id));
+  document.querySelectorAll(".fav-remove").forEach(b=>b.onclick=()=>removeFavorite(+b.dataset.id));
   document.querySelectorAll(".edit").forEach(b=>b.onclick=()=>editPlayer(+b.dataset.id));
   document.querySelectorAll(".remove").forEach(b=>b.onclick=()=>removePlayer(+b.dataset.id));
   document.querySelectorAll(".start").forEach(b=>b.onclick=()=>startCourt(+b.dataset.id));
@@ -220,7 +334,7 @@ function bind(){
 function render(){
   syncStatuses();
   $("#courtCount").value=state.courtCount;
-  renderWaiting();renderCourts();
+  renderFavorites();renderWaiting();renderCourts();
   $("#statAll").textContent=state.players.length;
   $("#statPlay").textContent=state.players.filter(p=>p.status==="เล่น").length;
   $("#statRest").textContent=state.players.filter(p=>p.status==="พัก").length;

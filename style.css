@@ -50,4 +50,14 @@ h2{font-size:18px;margin-top:0}
 .lv2{background:var(--lv2-bg)!important;border-color:var(--lv2-border)!important;color:var(--lv2-text)}
 .lv3{background:var(--lv3-bg)!important;border-color:var(--lv3-border)!important;color:var(--lv3-text)}
 @media(max-width:820px){.layout{grid-template-columns:1fr}}
-@media(max-width:480px){header h1{font-size:18px}.slot{min-height:66px}.slot-name{font-size:15px}.actions button{flex:1 1 45%}}
+@media(max-width:480px){header h1{font-size:18px}.slot{min-height:66px}.slot-name{font-size:15px}.actions button{flex:1 1 45%}}.section-head{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.section-head h2{margin-bottom:0}
+.compact{padding:7px 10px;font-size:13px}
+.favorites-zone{margin-top:10px}
+.favorite-item{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:9px 10px;margin:6px 0;border:1px solid var(--line);border-radius:11px;background:#fff}
+.favorite-main{display:flex;align-items:center;gap:8px;min-width:0}
+.favorite-name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.star-btn{background:transparent;color:#d97706;padding:6px 8px;font-size:18px}
+.star-btn.off{color:#98a2b3}
+.favorite-actions{display:flex;gap:6px;flex-wrap:wrap}
+.favorite-actions button{padding:7px 9px;font-size:13px}
