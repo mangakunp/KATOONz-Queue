@@ -1,0 +1,70 @@
+<!doctype html>
+<html lang="th">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#0f766e">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="KATOONz Queue">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="apple-touch-icon" href="icon-192.png">
+  <link rel="stylesheet" href="style.css">
+  <title>KATOONz x TOMO Queue Manager</title>
+</head>
+<body>
+  <header>
+    <h1>🏸 KATOONz x TOMO Queue Manager</h1>
+    <small>v2.0 PWA Offline</small>
+  </header>
+
+  <main>
+    <section class="card stats">
+      <div><span>ผู้เล่น</span><b id="statAll">0</b></div>
+      <div><span>กำลังเล่น</span><b id="statPlay">0</b></div>
+      <div><span>พัก</span><b id="statRest">0</b></div>
+    </section>
+
+    <section class="card controls">
+      <div class="row">
+        <input id="newName" placeholder="ชื่อผู้เล่น">
+        <select id="newLv">
+          <option value="1">Lv.1</option>
+          <option value="2" selected>Lv.2</option>
+          <option value="3">Lv.3</option>
+        </select>
+        <button id="addPlayer" class="primary">➕ เพิ่มผู้เล่น</button>
+      </div>
+
+      <div class="row top-gap">
+        <label>จำนวนคอร์ท</label>
+        <select id="courtCount">
+          <option>1</option><option selected>2</option><option>3</option>
+          <option>4</option><option>5</option><option>6</option>
+        </select>
+        <button id="resetGames" class="secondary">รีเซ็ตจำนวนเกม</button>
+        <button id="resetAll" class="danger">ล้างข้อมูลทั้งหมด</button>
+      </div>
+
+      <p class="hint">
+        ลากชื่อคนพักไปทับผู้เล่นในคอร์ทเพื่อเปลี่ยนตัว
+        ลากผู้เล่นข้ามคอร์ท หรือกลับไปพื้นที่คนพักได้
+      </p>
+    </section>
+
+    <div class="layout">
+      <section class="card">
+        <h2>คนพัก</h2>
+        <div id="waiting" class="waiting-zone" data-drop="waiting"></div>
+      </section>
+
+      <section class="card">
+        <h2>คอร์ท</h2>
+        <div id="courts"></div>
+      </section>
+    </div>
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
