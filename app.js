@@ -4,6 +4,7 @@ const $=s=>document.querySelector(s);
 function emptyState(){
   return{
     players:[],
+    history:[],
     favorites:[],
     courtCount:0,
     courts:[]
@@ -26,6 +27,7 @@ function defaults(){
       {id:11,name:"TE",lv:3,games:0,status:"พัก"},
       {id:12,name:"DM",lv:2,games:0,status:"พัก"}
     ],
+    history:[],
     favorites:[
       {id:101,name:"K'T",lv:3},
       {id:102,name:"NT",lv:2},
@@ -51,6 +53,7 @@ function defaults(){
 let state;
 try{state=JSON.parse(localStorage.getItem(KEY))||defaults()}catch{state=defaults()}
 if(!Array.isArray(state.favorites))state.favorites=[];
+if(!Array.isArray(state.history))state.history=[];
 let drag={playerId:null,sourceCourt:null,sourceSlot:null,ghost:null};
 let replaceTarget={courtId:null,slotIndex:null};
 
@@ -86,6 +89,30 @@ function removePlayer(id){
     state.players=state.players.filter(x=>x.id!==id);
     save();render();
   }
+}
+
+
+function openFavoriteModal(){
+  $("#favoriteNameInput").value="";
+  $("#favoriteLvInput").value="2";
+  $("#favoriteModal").classList.remove("hidden");
+  $("#favoriteModal").setAttribute("aria-hidden","false");
+  setTimeout(()=>$("#favoriteNameInput").focus(),50);
+}
+function closeFavoriteModal(){
+  $("#favoriteModal").classList.add("hidden");
+  $("#favoriteModal").setAttribute("aria-hidden","true");
+}
+function saveFavoriteDirect(){
+  const name=$("#favoriteNameInput").value.trim();
+  const lv=+$("#favoriteLvInput").value;
+  if(!name)return alert("กรุณาใส่ชื่อผู้เล่น");
+  const duplicate=state.favorites.some(f=>f.name.trim().toLowerCase()===name.toLowerCase());
+  if(duplicate)return alert(name+" อยู่ในรายชื่อโปรดแล้ว");
+  state.favorites.push({id:Date.now(),name,lv});
+  save();
+  closeFavoriteModal();
+  render();
 }
 
 function isFavoriteName(name){
@@ -140,29 +167,107 @@ function addAllFavorites(){
 
 function changeCourtCount(){
   const n=+$("#courtCount").value;
-  if(state.courts.some(c=>c.slots.some(Boolean))&&!confirm("มีคอร์ทกำลังเล่นอยู่ ต้องการเปลี่ยนจำนวนคอร์ทหรือไม่?")){
-    render();return;
+  const oldCount=state.courts.length;
+
+  if(n===oldCount){
+    state.courtCount=n;
+    save();
+    render();
+    return;
   }
-  const old=state.courts;
+
+  if(n>oldCount){
+    for(let i=oldCount;i<n;i++){
+      state.courts.push({
+        id:i+1,
+        name:String(i+1),
+        slots:[null,null,null,null]
+      });
+    }
+    state.courtCount=n;
+    save();
+    render();
+    return;
+  }
+
+  const courtsToRemove=state.courts.slice(n);
+  const hasActivePlayers=courtsToRemove.some(c=>c.slots.some(Boolean));
+
+  if(hasActivePlayers){
+    alert("ไม่สามารถลดจำนวนคอร์ทได้ เพราะคอร์ทที่จะถูกลบยังมีผู้เล่นอยู่ กรุณาจบเกมหรือย้ายผู้เล่นออกก่อน");
+    $("#courtCount").value=String(oldCount);
+    return;
+  }
+
+  if(!confirm("ต้องการลดจำนวนคอร์ทจาก "+oldCount+" เหลือ "+n+" ใช่หรือไม่?")){
+    $("#courtCount").value=String(oldCount);
+    return;
+  }
+
+  state.courts=state.courts.slice(0,n);
   state.courtCount=n;
-  state.courts=Array.from({length:n},(_,i)=>({id:i+1,name:old[i]?.name||String(i+1),slots:[null,null,null,null]}));
-  syncStatuses();save();render();
+  save();
+  render();
+}
+
+function pairKey(a,b){
+  return [a,b].sort((x,y)=>x-y).join("-");
+}
+function historyCounts(){
+  const partner={},opponent={};
+  state.history.forEach(h=>{
+    const ids=h.playerIds||[];
+    if(ids.length!==4)return;
+    const [a,b,c,d]=ids;
+    [pairKey(a,b),pairKey(c,d)].forEach(k=>partner[k]=(partner[k]||0)+1);
+    [[a,c],[a,d],[b,c],[b,d]].forEach(x=>{
+      const k=pairKey(x[0],x[1]);
+      opponent[k]=(opponent[k]||0)+1;
+    });
+  });
+  return{partner,opponent};
 }
 function chooseFour(){
-  const rest=state.players.filter(p=>p.status==="พัก").sort((a,b)=>a.games-b.games||b.lv-a.lv);
+  const rest=state.players
+    .filter(p=>p.status==="พัก")
+    .sort((a,b)=>a.games-b.games||b.lv-a.lv||a.name.localeCompare(b.name));
   if(rest.length<4)return null;
-  const pool=rest.slice(0,Math.min(8,rest.length));
-  let best=null,bestDiff=999;
-  for(let i=0;i<pool.length;i++)for(let j=i+1;j<pool.length;j++)for(let k=j+1;k<pool.length;k++)for(let m=k+1;m<pool.length;m++){
+
+  const pool=rest.slice(0,Math.min(10,rest.length));
+  const counts=historyCounts();
+  let best=null,bestScore=Infinity;
+
+  for(let i=0;i<pool.length;i++)
+  for(let j=i+1;j<pool.length;j++)
+  for(let k=j+1;k<pool.length;k++)
+  for(let m=k+1;m<pool.length;m++){
     const q=[pool[i],pool[j],pool[k],pool[m]];
-    const pairs=[[q[0],q[1],q[2],q[3]],[q[0],q[2],q[1],q[3]],[q[0],q[3],q[1],q[2]]];
-    pairs.forEach(z=>{
-      const d=Math.abs((z[0].lv+z[1].lv)-(z[2].lv+z[3].lv));
-      if(d<bestDiff){bestDiff=d;best=z}
+    const pairings=[
+      [q[0],q[1],q[2],q[3]],
+      [q[0],q[2],q[1],q[3]],
+      [q[0],q[3],q[1],q[2]]
+    ];
+
+    pairings.forEach(z=>{
+      const teamDiff=Math.abs((z[0].lv+z[1].lv)-(z[2].lv+z[3].lv));
+      const gameSpread=Math.max(...z.map(p=>p.games))-Math.min(...z.map(p=>p.games));
+      const partnerRepeat=(counts.partner[pairKey(z[0].id,z[1].id)]||0)+(counts.partner[pairKey(z[2].id,z[3].id)]||0);
+      const opponentRepeat=
+        (counts.opponent[pairKey(z[0].id,z[2].id)]||0)+
+        (counts.opponent[pairKey(z[0].id,z[3].id)]||0)+
+        (counts.opponent[pairKey(z[1].id,z[2].id)]||0)+
+        (counts.opponent[pairKey(z[1].id,z[3].id)]||0);
+
+      const score=(teamDiff*20)+(gameSpread*8)+(partnerRepeat*12)+(opponentRepeat*3);
+      if(score<bestScore){
+        bestScore=score;
+        best=z;
+      }
     });
   }
   return best;
 }
+
 function startCourt(id){
   const c=state.courts.find(x=>x.id===id);
   if(c.slots.some(Boolean))return alert("คอร์ทนี้กำลังใช้งาน");
@@ -173,7 +278,18 @@ function startCourt(id){
   syncStatuses();save();render();
 }
 function endCourt(id){
-  state.courts.find(x=>x.id===id).slots=[null,null,null,null];
+  const c=state.courts.find(x=>x.id===id);
+  if(!c)return;
+  const ids=c.slots.filter(Boolean);
+  if(ids.length===4){
+    state.history.unshift({
+      id:Date.now(),
+      courtName:c.name,
+      playerIds:[...ids],
+      finishedAt:new Date().toISOString()
+    });
+  }
+  c.slots=[null,null,null,null];
   syncStatuses();save();render();
 }
 function rotate(id){
@@ -303,18 +419,49 @@ function renderFavorites(){
     return;
   }
   const sorted=state.favorites.slice().sort((a,b)=>a.name.localeCompare(b.name));
-  box.innerHTML=sorted.map(f=>{
+  box.innerHTML=sorted.map((f,index)=>{
     const today=state.players.some(p=>p.name.trim().toLowerCase()===f.name.trim().toLowerCase());
     return `<div class="favorite-item lv${f.lv}">
       <div class="favorite-main">
+        <span class="favorite-number">${index+1}</span>
         <span class="star-btn">★</span>
         <div><div class="favorite-name">${esc(f.name)}</div><div class="slot-meta">Lv.${f.lv}${today?" · อยู่ในวันนี้แล้ว":""}</div></div>
       </div>
       <div class="favorite-actions">
         <button class="primary fav-add" data-id="${f.id}" ${today?"disabled":""}>เพิ่มวันนี้</button>
-        <button class="secondary fav-edit" data-id="${f.id}">แก้ไข</button>
+        <button class="secondary fav-edit" data-id="${f.id}">แก้ชื่อ/Lv.</button>
         <button class="danger fav-remove" data-id="${f.id}">ลบดาว</button>
       </div>
+    </div>`;
+  }).join("");
+}
+
+
+function formatDateTime(iso){
+  try{
+    return new Intl.DateTimeFormat("th-TH",{dateStyle:"short",timeStyle:"short"}).format(new Date(iso));
+  }catch{
+    return iso||"";
+  }
+}
+function renderHistory(){
+  const box=$("#historyList");
+  $("#historyCount").textContent=state.history.length+" เกม";
+  if(!state.history.length){
+    box.innerHTML='<div class="history-empty">ยังไม่มีประวัติรอบเล่น</div>';
+    return;
+  }
+  box.innerHTML=state.history.slice(0,30).map(h=>{
+    const ps=(h.playerIds||[]).map(id=>player(id)).filter(Boolean);
+    const names=ps.length===4
+      ? `${esc(ps[0].name)} + ${esc(ps[1].name)} <span class="vs">VS</span> ${esc(ps[2].name)} + ${esc(ps[3].name)}`
+      : "ข้อมูลผู้เล่นไม่ครบ";
+    return `<div class="history-item">
+      <div class="history-top">
+        <div class="history-court">คอร์ท ${esc(h.courtName||"-")}</div>
+        <div class="history-time">${formatDateTime(h.finishedAt)}</div>
+      </div>
+      <div class="history-match">${names}</div>
     </div>`;
   }).join("");
 }
@@ -361,8 +508,62 @@ function wireDrag(){
     });
   });
 }
+
+function exportData(){
+  const data=JSON.stringify(state,null,2);
+  const blob=new Blob([data],{type:"application/json"});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement("a");
+  a.href=url;
+  a.download="KATOONz_TOMO_backup_"+new Date().toISOString().slice(0,10)+".json";
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+}
+function importDataFile(file){
+  const reader=new FileReader();
+  reader.onload=()=>{
+    try{
+      const imported=JSON.parse(reader.result);
+      if(!imported||!Array.isArray(imported.players)||!Array.isArray(imported.courts)){
+        throw new Error("รูปแบบไฟล์ไม่ถูกต้อง");
+      }
+      if(!Array.isArray(imported.favorites))imported.favorites=[];
+      if(!Array.isArray(imported.history))imported.history=[];
+      state=imported;
+      syncStatuses();
+      save();
+      render();
+      alert("กู้คืนข้อมูลสำเร็จ");
+    }catch(e){
+      alert("ไม่สามารถกู้คืนข้อมูลได้: "+e.message);
+    }
+  };
+  reader.readAsText(file);
+}
+
 function bind(){
   $("#addPlayer").onclick=addPlayer;
+  $("#exportData").onclick=exportData;
+  $("#importData").onclick=()=>$("#importFile").click();
+  $("#importFile").onchange=e=>{
+    const file=e.target.files?.[0];
+    if(file)importDataFile(file);
+    e.target.value="";
+  };
+  $("#clearHistory").onclick=()=>{
+    if(confirm("ล้างประวัติรอบเล่นทั้งหมด?")){
+      state.history=[];
+      save();
+      render();
+    }
+  };
+  $("#addFavoriteDirect").onclick=openFavoriteModal;
+  $("#saveFavoriteDirect").onclick=saveFavoriteDirect;
+  $("#closeFavorite").onclick=closeFavoriteModal;
+  $("#favoriteModal .modal-backdrop").onclick=closeFavoriteModal;
+  $("#favoriteNameInput").onkeydown=e=>{if(e.key==="Enter")saveFavoriteDirect()};
   $("#closeReplace").onclick=closeReplaceModal;
   $("#replaceModal .modal-backdrop").onclick=closeReplaceModal;
   $("#addAllFavorites").onclick=addAllFavorites;
@@ -375,6 +576,7 @@ function bind(){
       state={
         players:[],
         favorites:savedFavorites,
+        history:[],
         courtCount:0,
         courts:[]
       };
@@ -416,7 +618,8 @@ function bind(){
 function render(){
   syncStatuses();
   $("#courtCount").value=state.courtCount;
-  renderFavorites();renderWaiting();renderCourts();
+  renderFavorites();renderWaiting();renderCourts();renderHistory();
+  $("#favoriteCount").textContent=state.favorites.length+" คน";
   $("#statAll").textContent=state.players.length;
   $("#statPlay").textContent=state.players.filter(p=>p.status==="เล่น").length;
   $("#statRest").textContent=state.players.filter(p=>p.status==="พัก").length;

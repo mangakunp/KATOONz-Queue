@@ -15,7 +15,7 @@
 <body>
   <header>
     <h1>🏸 KATOONz x TOMO Queue Manager</h1>
-    <small>v2.4 PWA Offline · Tap to Replace</small>
+    <small>v3.0 PWA Offline · Smart Queue</small>
   </header>
 
   <main>
@@ -44,6 +44,9 @@
         </select>
         <button id="resetGames" class="secondary">รีเซ็ตจำนวนเกม</button>
         <button id="newSession" class="secondary">🏸 เริ่มก๊วนใหม่</button>
+        <button id="exportData" class="secondary">⬇️ สำรองข้อมูล</button>
+        <button id="importData" class="secondary">⬆️ กู้คืนข้อมูล</button>
+        <input id="importFile" type="file" accept=".json,application/json" hidden>
         <button id="factoryReset" class="danger">ล้างระบบทั้งหมด</button>
       </div>
 
@@ -57,8 +60,11 @@
       <section>
         <section class="card">
           <div class="section-head">
-            <h2>รายชื่อโปรด ⭐</h2>
-            <button id="addAllFavorites" class="secondary compact">เพิ่มทั้งหมด</button>
+            <h2>รายชื่อโปรด ⭐ <span id="favoriteCount" class="count-badge">0 คน</span></h2>
+            <div class="favorite-head-actions">
+              <button id="addFavoriteDirect" class="primary compact">➕ เพิ่มรายชื่อโปรด</button>
+              <button id="addAllFavorites" class="secondary compact">เพิ่มทั้งหมด</button>
+            </div>
           </div>
           <div id="favorites" class="favorites-zone"></div>
           <p class="hint">กดดาวข้างชื่อผู้เล่นเพื่อบันทึกไว้ถาวร ครั้งต่อไปแตะ “เพิ่มวันนี้” ได้ทันที</p>
@@ -75,7 +81,38 @@
         <div id="courts"></div>
       </section>
     </div>
+
+    <section class="card">
+      <div class="section-head">
+        <h2>ประวัติรอบเล่น <span id="historyCount" class="count-badge">0 เกม</span></h2>
+        <button id="clearHistory" class="danger compact">ล้างประวัติ</button>
+      </div>
+      <div id="historyList" class="history-list"></div>
+    </section>
   </main>
+
+  <div id="favoriteModal" class="modal hidden" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <section class="modal-panel" role="dialog" aria-modal="true" aria-labelledby="favoriteTitle">
+      <div class="modal-head">
+        <h2 id="favoriteTitle">เพิ่มรายชื่อโปรด</h2>
+        <button id="closeFavorite" class="secondary compact">ปิด</button>
+      </div>
+      <div class="favorite-form">
+        <label>ชื่อผู้เล่น
+          <input id="favoriteNameInput" placeholder="ชื่อผู้เล่น">
+        </label>
+        <label>Level
+          <select id="favoriteLvInput">
+            <option value="1">Lv.1</option>
+            <option value="2" selected>Lv.2</option>
+            <option value="3">Lv.3</option>
+          </select>
+        </label>
+        <button id="saveFavoriteDirect" class="primary">บันทึกรายชื่อโปรด</button>
+      </div>
+    </section>
+  </div>
 
   <div id="replaceModal" class="modal hidden" aria-hidden="true">
     <div class="modal-backdrop"></div>

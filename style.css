@@ -72,3 +72,23 @@ h2{font-size:18px;margin-top:0}
 .available-player button{width:100%;text-align:left;background:transparent;color:inherit;padding:0}
 .slot.filled{position:relative}
 .slot.filled::after{content:"แตะเพื่อเปลี่ยน";position:absolute;right:6px;bottom:4px;font-size:10px;color:var(--muted);opacity:.8}
+
+.count-badge{display:inline-block;margin-left:6px;padding:3px 8px;border-radius:999px;background:#eef2f6;color:var(--muted);font-size:12px;font-weight:700;vertical-align:middle}
+.favorite-number{display:inline-flex;align-items:center;justify-content:center;min-width:28px;height:28px;padding:0 7px;border-radius:999px;background:#fff;color:var(--text);font-weight:800;border:1px solid var(--line)}
+
+.favorite-head-actions{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+.favorite-form{display:grid;gap:10px;margin-top:12px}
+.favorite-form label{display:grid;gap:6px;font-weight:700}
+.favorite-form input,.favorite-form select{width:100%}
+
+.history-list{display:grid;gap:8px;margin-top:10px}
+.history-item{border:1px solid var(--line);border-radius:12px;padding:10px;background:#fff}
+.history-top{display:flex;justify-content:space-between;gap:8px;align-items:center}
+.history-court{font-weight:800}
+.history-time{font-size:12px;color:var(--muted)}
+.history-match{margin-top:6px;font-weight:700}
+.history-empty{padding:14px;text-align:center;color:var(--muted)}
+.smart-note{display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:#ecfdf3;color:#166534;font-size:11px;font-weight:800}
+@media(max-width:560px){
+  .history-top{align-items:flex-start;flex-direction:column}
+}
