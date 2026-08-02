@@ -16,24 +16,13 @@
   <header>
     <h1>🏸 KATOONz x TOMO Queue Manager</h1>
     <small>v4.3 PWA Offline · Waiting Queue</small>
-    <button id="compactToggle" class="secondary compact-toggle">📱 โหมดกระชับ</button>
-  <nav class="bottom-nav" aria-label="เมนูหลัก">
-  <button class="tab-button active" data-tab="homeTab">
-    <span>🏠</span>
-    <small>สมาชิก</small>
-  </button>
-
-  <button class="tab-button" data-tab="todayTab">
-    <span>👥</span>
-    <small>วันนี้</small>
-  </button>
-
-  <button class="tab-button" data-tab="courtsTab">
-    <span>🏸</span>
-    <small>สนาม</small>
-  </button>
-</nav>    
   </header>
+
+  <nav class="tab-bar" aria-label="เมนูหลัก">
+    <button class="tab-button active" data-tab="homeTab">🏠 สมาชิก</button>
+    <button class="tab-button" data-tab="todayTab">👥 วันนี้</button>
+    <button class="tab-button" data-tab="courtsTab">🏸 สนาม</button>
+  </nav>
 
   <main>
     <section id="homeTab" class="tab-panel active">
@@ -186,6 +175,5 @@
   <script src="firebase-config.js"></script>
   <script src="app.js"></script>
   <script src="firebase-sync.js"></script>
-
 </body>
 </html>
