@@ -15,36 +15,43 @@
 <body>
   <header>
     <h1>🏸 KATOONz x TOMO Queue Manager</h1>
-    <small>v3.1 PWA Offline · Tab Navigation</small>
+    <small>v4.0 PWA Offline + Firebase Sync</small>
   </header>
 
-  <nav class="tab-bar" aria-label="เมนูหลัก">
-    <button class="tab-button active" data-tab="homeTab">🏠 สมาชิก</button>
-    <button class="tab-button" data-tab="todayTab">👥 วันนี้</button>
-    <button class="tab-button" data-tab="courtsTab">🏸 สนาม</button>
-  </nav>
-
   <main>
-<section id="homeTab" class="tab-panel active">
-<section class="card">
-          <div class="section-head">
-            <h2>รายชื่อโปรด ⭐ <span id="favoriteCount" class="count-badge">0 คน</span></h2>
-            <div class="favorite-head-actions">
-              <button id="addFavoriteDirect" class="primary compact">➕ เพิ่มรายชื่อโปรด</button>
-              <button id="addAllFavorites" class="secondary compact">เพิ่มทั้งหมด</button>
-            </div>
-          </div>
-          <div id="favorites" class="favorites-zone"></div>
-          <p class="hint">กดดาวข้างชื่อผู้เล่นเพื่อบันทึกไว้ถาวร ครั้งต่อไปแตะ “เพิ่มวันนี้” ได้ทันที</p>
-        </section>
-</section>
-<section id="todayTab" class="tab-panel">
-<section class="card stats">
+    <section class="card stats">
       <div><span>ผู้เล่น</span><b id="statAll">0</b></div>
       <div><span>กำลังเล่น</span><b id="statPlay">0</b></div>
       <div><span>พัก</span><b id="statRest">0</b></div>
     </section>
-<section class="card controls">
+
+    
+    <section class="card cloud-card">
+      <div class="section-head">
+        <h2>☁️ ซิงก์ข้อมูลหลายเครื่อง</h2>
+        <span id="cloudStatus" class="count-badge">ยังไม่เชื่อมต่อ</span>
+      </div>
+      <div class="cloud-grid">
+        <label>รหัสก๊วน
+          <input id="syncCode" placeholder="อย่างน้อย 16 ตัวอักษร">
+        </label>
+        <label>โหมดซิงก์
+          <select id="autoSync">
+            <option value="off">ปิด</option>
+            <option value="on">เปิดอัตโนมัติ</option>
+          </select>
+        </label>
+      </div>
+      <div class="row top-gap">
+        <button id="saveSyncCode" class="secondary">💾 บันทึกรหัส</button>
+        <button id="uploadCloud" class="primary">⬆️ ส่งขึ้น Cloud</button>
+        <button id="downloadCloud" class="secondary">⬇️ ดึงจาก Cloud</button>
+      </div>
+      <p class="hint">ใช้รหัสก๊วนเดียวกันบน PC, iPad และ Android ข้อมูลจะซิงก์ผ่าน Firebase เมื่อมีอินเทอร์เน็ต ส่วนการจัดคิวยังใช้งานออฟไลน์ได้ตามเดิม</p>
+    </section>
+
+
+    <section class="card controls">
       <div class="row">
         <input id="newName" placeholder="ชื่อผู้เล่น">
         <select id="newLv">
@@ -74,25 +81,41 @@
         ลากผู้เล่นข้ามคอร์ท หรือกลับไปพื้นที่คนพักได้
       </p>
     </section>
-<section class="card">
+
+    <div class="layout">
+      <section>
+        <section class="card">
+          <div class="section-head">
+            <h2>รายชื่อโปรด ⭐ <span id="favoriteCount" class="count-badge">0 คน</span></h2>
+            <div class="favorite-head-actions">
+              <button id="addFavoriteDirect" class="primary compact">➕ เพิ่มรายชื่อโปรด</button>
+              <button id="addAllFavorites" class="secondary compact">เพิ่มทั้งหมด</button>
+            </div>
+          </div>
+          <div id="favorites" class="favorites-zone"></div>
+          <p class="hint">กดดาวข้างชื่อผู้เล่นเพื่อบันทึกไว้ถาวร ครั้งต่อไปแตะ “เพิ่มวันนี้” ได้ทันที</p>
+        </section>
+
+        <section class="card">
           <h2>คนพัก</h2>
           <div id="waiting" class="waiting-zone" data-drop="waiting"></div>
         </section>
-</section>
-<section id="courtsTab" class="tab-panel">
-<section class="card">
+      </section>
+
+      <section class="card">
         <h2>คอร์ท</h2>
         <div id="courts"></div>
       </section>
-<section class="card">
+    </div>
+
+    <section class="card">
       <div class="section-head">
         <h2>ประวัติรอบเล่น <span id="historyCount" class="count-badge">0 เกม</span></h2>
         <button id="clearHistory" class="danger compact">ล้างประวัติ</button>
       </div>
       <div id="historyList" class="history-list"></div>
     </section>
-</section>
-</main>
+  </main>
 
   <div id="favoriteModal" class="modal hidden" aria-hidden="true">
     <div class="modal-backdrop"></div>
@@ -129,6 +152,10 @@
     </section>
   </div>
 
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
+  <script src="firebase-config.js"></script>
   <script src="app.js"></script>
+  <script src="firebase-sync.js"></script>
 </body>
 </html>

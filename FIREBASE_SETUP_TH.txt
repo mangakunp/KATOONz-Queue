@@ -1,0 +1,39 @@
+KATOONz x TOMO Queue Manager v4.0 — Firebase Sync
+
+เป้าหมาย
+- พิมพ์/แก้รายชื่อบน PC
+- กด “ส่งขึ้น Cloud”
+- เปิด iPad หรือ Android แล้วกด “ดึงจาก Cloud”
+- หรือเปิด “ซิงก์อัตโนมัติ” เพื่อรับข้อมูลทันทีเมื่อมีอินเทอร์เน็ต
+
+ไฟล์สำคัญ
+- firebase-config.js : ใส่ค่าที่คัดลอกจาก Firebase Console
+- database.rules.json : กฎสำหรับ Realtime Database
+- firebase-sync.js : ระบบซิงก์
+- index.html, app.js, style.css : ตัวแอป
+
+ขั้นตอนย่อ
+1. สมัคร/เข้า Firebase Console ด้วยบัญชี Google
+2. Create a project
+3. Add app > Web (ไอคอน </>)
+4. Register app แล้วคัดลอก firebaseConfig
+5. เปิดไฟล์ firebase-config.js และแทนค่า PUT_YOUR_...
+6. Firebase Console > Build > Realtime Database > Create Database
+7. เลือก Region ที่ใกล้ เช่น Singapore
+8. เปิดแท็บ Rules แล้ววางเนื้อหาจาก database.rules.json จากนั้น Publish
+9. อัปโหลดไฟล์ทั้งหมดขึ้น GitHub Pages ทับของเดิม
+10. เปิดเว็บบน PC และ iPad
+11. ใส่ “รหัสก๊วน” เดียวกัน อย่างน้อย 16 ตัวอักษร เช่น KATOONz-TOMO-2026-ABCD
+12. PC: แก้ข้อมูลแล้วกด ส่งขึ้น Cloud
+13. iPad: กด ดึงจาก Cloud หรือเลือกซิงก์อัตโนมัติ
+
+ข้อควรทราบ
+- Firebase config ไม่ใช่รหัสผ่าน แต่ต้องใช้ Database Rules ควบคุมสิทธิ์
+- ระบบตัวอย่างนี้ใช้รหัสก๊วนยาวเป็นกุญแจเข้าถึง เหมาะกับข้อมูลก๊วนที่ไม่ละเอียดอ่อน
+- ห้ามใช้รหัสสั้นหรือรหัสเดาง่าย
+- ถ้าไม่มีอินเทอร์เน็ต แอปยังใช้ข้อมูล Local Storage ได้ แต่ Cloud จะซิงก์เมื่อออนไลน์
+- ก่อนอัปเดตใหญ่ควรกดสำรองข้อมูล JSON
+
+ปุ่มแก้ไข
+- รายชื่อโปรด: “แก้ชื่อ” และ “ปรับ Lv.” แยกกัน
+- ผู้เล่นวันนี้: “แก้ชื่อ” และ “ปรับ Lv.” แยกกัน

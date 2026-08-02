@@ -1,6 +1,16 @@
-KATOONz x TOMO Queue Manager v3.1
+KATOONz x TOMO Queue Manager v4.0 Firebase Sync
 
-- 3 แท็บ: สมาชิก / วันนี้ / สนาม
-- ปุ่ม × มุมขวาของคอร์ทเพื่อลบคอร์ท
-- หากมีผู้เล่น ระบบถามยืนยันและส่งผู้เล่นกลับไปพัก
-- คอร์ทอื่นและจำนวนเกมไม่ถูกรีเซ็ต
+ใหม่:
+- ซิงก์ PC ↔ iPad ↔ Android ผ่าน Firebase Realtime Database
+- ส่งขึ้น Cloud / ดึงจาก Cloud
+- ซิงก์อัตโนมัติ
+- ใช้รหัสก๊วนเดียวกันทุกเครื่อง
+- แยกปุ่ม “แก้ชื่อ” และ “ปรับ Lv.” ทั้งสมาชิกโปรดและผู้เล่นวันนี้
+- ยังใช้งานออฟไลน์ได้
+- มี database.rules.json และคู่มือ FIREBASE_SETUP_TH.txt
+
+เริ่มต้น:
+1. อ่าน FIREBASE_SETUP_TH.txt
+2. สร้าง Firebase Project และ Realtime Database
+3. ใส่ config ใน firebase-config.js
+4. อัปโหลดไฟล์ทั้งหมดขึ้น GitHub Pages

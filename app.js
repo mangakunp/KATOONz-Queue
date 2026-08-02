@@ -73,14 +73,21 @@ function addPlayer(){
   $("#newName").value="";
   save();render();
 }
-function editPlayer(id){
+function editPlayerName(id){
   const p=player(id);
   const name=prompt("ชื่อใหม่",p.name);
-  if(name===null)return;
-  const lv=prompt("Level 1-3",p.lv);
-  if(name.trim())p.name=name.trim();
-  if(["1","2","3"].includes(lv))p.lv=+lv;
-  save();render();
+  if(name!==null && name.trim()){
+    p.name=name.trim();
+    save();render();
+  }
+}
+function editPlayerLevel(id){
+  const p=player(id);
+  const lv=prompt("Level ใหม่ (1-3)",String(p.lv));
+  if(["1","2","3"].includes(lv)){
+    p.lv=+lv;
+    save();render();
+  }
 }
 function removePlayer(id){
   const p=player(id);
@@ -142,15 +149,23 @@ function removeFavorite(fid){
     save();render();
   }
 }
-function editFavorite(fid){
+function editFavoriteName(fid){
   const f=state.favorites.find(x=>x.id===fid);
   if(!f)return;
   const name=prompt("ชื่อในรายชื่อโปรด",f.name);
-  if(name===null)return;
-  const lv=prompt("Level 1-3",f.lv);
-  if(name.trim())f.name=name.trim();
-  if(["1","2","3"].includes(lv))f.lv=+lv;
-  save();render();
+  if(name!==null && name.trim()){
+    f.name=name.trim();
+    save();render();
+  }
+}
+function editFavoriteLevel(fid){
+  const f=state.favorites.find(x=>x.id===fid);
+  if(!f)return;
+  const lv=prompt("Level ใหม่ (1-3)",String(f.lv));
+  if(["1","2","3"].includes(lv)){
+    f.lv=+lv;
+    save();render();
+  }
 }
 function addAllFavorites(){
   let added=0;
@@ -429,7 +444,7 @@ function renderFavorites(){
       </div>
       <div class="favorite-actions">
         <button class="primary fav-add" data-id="${f.id}" ${today?"disabled":""}>เพิ่มวันนี้</button>
-        <button class="secondary fav-edit" data-id="${f.id}">แก้ชื่อ/Lv.</button>
+        <button class="secondary fav-name" data-id="${f.id}">แก้ชื่อ</button><button class="secondary fav-lv" data-id="${f.id}">ปรับ Lv.</button>
         <button class="danger fav-remove" data-id="${f.id}">ลบดาว</button>
       </div>
     </div>`;
@@ -471,7 +486,7 @@ function renderWaiting(){
   $("#waiting").innerHTML=arr.length?arr.map(p=>`
     <div class="player-chip lv${p.lv}" data-player-id="${p.id}">
       <div><span class="chip-main">${esc(p.name)}</span> <span class="badge">Lv.${p.lv}</span><div class="slot-meta">เกม ${p.games}</div></div>
-      <div><button class="star-btn ${isFavoriteName(p.name)?"":"off"} favorite-toggle" data-id="${p.id}" title="บันทึกรายชื่อโปรด">${isFavoriteName(p.name)?"★":"☆"}</button> <button class="secondary edit" data-id="${p.id}">แก้ไข</button> <button class="danger remove" data-id="${p.id}">ลบ</button></div>
+      <div><button class="star-btn ${isFavoriteName(p.name)?"":"off"} favorite-toggle" data-id="${p.id}" title="บันทึกรายชื่อโปรด">${isFavoriteName(p.name)?"★":"☆"}</button> <span class="name-lv-actions"><button class="secondary edit-name" data-id="${p.id}">แก้ชื่อ</button><button class="secondary edit-lv" data-id="${p.id}">ปรับ Lv.</button><button class="danger remove" data-id="${p.id}">ลบ</button></span></div>
     </div>`).join(""):'<div class="empty">ไม่มีคนพัก</div>';
 }
 function renderCourts(){
@@ -481,7 +496,6 @@ function renderCourts(){
   }
   $("#courts").innerHTML=state.courts.map(c=>`
     <div class="court">
-      <button class="delete-court" data-id="${c.id}" aria-label="ลบคอร์ท ${esc(c.name)}">×</button>
       <div class="court-head"><span>คอร์ท</span><input class="court-name" data-id="${c.id}" value="${esc(c.name)}"></div>
       <div class="slots">${slotHtml(c,0)}${slotHtml(c,1)}<div class="vs">VS</div>${slotHtml(c,2)}${slotHtml(c,3)}</div>
       <div class="actions">
@@ -544,26 +558,7 @@ function importDataFile(file){
   reader.readAsText(file);
 }
 
-function showTab(tabId){
-  document.querySelectorAll(".tab-panel").forEach(p=>p.classList.toggle("active",p.id===tabId));
-  document.querySelectorAll(".tab-button").forEach(b=>b.classList.toggle("active",b.dataset.tab===tabId));
-  try{localStorage.setItem("katoonz_active_tab",tabId)}catch{}
-}
-function deleteCourt(id){
-  const idx=state.courts.findIndex(c=>c.id===id);
-  if(idx<0)return;
-  const c=state.courts[idx];
-  const hasPlayers=c.slots.some(Boolean);
-  const msg=hasPlayers?`คอร์ท ${c.name} ยังมีผู้เล่นอยู่ ต้องการลบและส่งผู้เล่นทั้งหมดกลับไปพักใช่หรือไม่?`:`ต้องการลบคอร์ท ${c.name} ใช่หรือไม่?`;
-  if(!confirm(msg))return;
-  state.courts.splice(idx,1);
-  state.courts.forEach((court,i)=>court.id=i+1);
-  state.courtCount=state.courts.length;
-  syncStatuses();save();render();
-}
-
 function bind(){
-  document.querySelectorAll(".tab-button").forEach(b=>b.onclick=()=>showTab(b.dataset.tab));
   $("#addPlayer").onclick=addPlayer;
   $("#exportData").onclick=exportData;
   $("#importData").onclick=()=>$("#importFile").click();
@@ -613,11 +608,12 @@ function bind(){
   };
   document.querySelectorAll(".favorite-toggle").forEach(b=>b.onclick=()=>toggleFavorite(+b.dataset.id));
   document.querySelectorAll(".fav-add").forEach(b=>b.onclick=()=>addFavoriteToday(+b.dataset.id));
-  document.querySelectorAll(".fav-edit").forEach(b=>b.onclick=()=>editFavorite(+b.dataset.id));
+  document.querySelectorAll(".fav-name").forEach(b=>b.onclick=()=>editFavoriteName(+b.dataset.id));
+  document.querySelectorAll(".fav-lv").forEach(b=>b.onclick=()=>editFavoriteLevel(+b.dataset.id));
   document.querySelectorAll(".fav-remove").forEach(b=>b.onclick=()=>removeFavorite(+b.dataset.id));
-  document.querySelectorAll(".edit").forEach(b=>b.onclick=()=>editPlayer(+b.dataset.id));
+  document.querySelectorAll(".edit-name").forEach(b=>b.onclick=()=>editPlayerName(+b.dataset.id));
+  document.querySelectorAll(".edit-lv").forEach(b=>b.onclick=()=>editPlayerLevel(+b.dataset.id));
   document.querySelectorAll(".remove").forEach(b=>b.onclick=()=>removePlayer(+b.dataset.id));
-  document.querySelectorAll(".delete-court").forEach(b=>b.onclick=()=>deleteCourt(+b.dataset.id));
   document.querySelectorAll(".start").forEach(b=>b.onclick=()=>startCourt(+b.dataset.id));
   document.querySelectorAll(".rotate").forEach(b=>b.onclick=()=>rotate(+b.dataset.id));
   document.querySelectorAll(".end").forEach(b=>b.onclick=()=>endCourt(+b.dataset.id));
@@ -645,11 +641,22 @@ function render(){
   $("#statPlay").textContent=state.players.filter(p=>p.status==="เล่น").length;
   $("#statRest").textContent=state.players.filter(p=>p.status==="พัก").length;
   bind();
-  let activeTab="homeTab";
-  try{activeTab=localStorage.getItem("katoonz_active_tab")||"homeTab"}catch{}
-  if(!document.getElementById(activeTab))activeTab="homeTab";
-  showTab(activeTab);
 }
+window.KTQM={
+  getState:()=>JSON.parse(JSON.stringify(state)),
+  replaceState:(newState)=>{
+    if(!newState || !Array.isArray(newState.players) || !Array.isArray(newState.courts)) throw new Error("รูปแบบข้อมูลไม่ถูกต้อง");
+    if(!Array.isArray(newState.favorites))newState.favorites=[];
+    if(!Array.isArray(newState.history))newState.history=[];
+    state=newState;
+    syncStatuses();
+    save();
+    render();
+  },
+  saveLocal:save,
+  render
+};
+
 render();
 
 if("serviceWorker" in navigator){
