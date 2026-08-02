@@ -496,6 +496,7 @@ function renderCourts(){
   }
   $("#courts").innerHTML=state.courts.map(c=>`
     <div class="court">
+      <button class="delete-court" data-id="${c.id}" aria-label="ลบคอร์ท ${esc(c.name)}">×</button>
       <div class="court-head"><span>คอร์ท</span><input class="court-name" data-id="${c.id}" value="${esc(c.name)}"></div>
       <div class="slots">${slotHtml(c,0)}${slotHtml(c,1)}<div class="vs">VS</div>${slotHtml(c,2)}${slotHtml(c,3)}</div>
       <div class="actions">
@@ -558,7 +559,42 @@ function importDataFile(file){
   reader.readAsText(file);
 }
 
+
+function showTab(tabId){
+  document.querySelectorAll(".tab-panel").forEach(panel=>{
+    panel.classList.toggle("active",panel.id===tabId);
+  });
+  document.querySelectorAll(".tab-button").forEach(button=>{
+    button.classList.toggle("active",button.dataset.tab===tabId);
+  });
+  try{localStorage.setItem("katoonz_active_tab",tabId)}catch{}
+}
+
+function deleteCourt(id){
+  const courtIndex=state.courts.findIndex(c=>c.id===id);
+  if(courtIndex<0)return;
+
+  const court=state.courts[courtIndex];
+  const hasPlayers=court.slots.some(Boolean);
+  const message=hasPlayers
+    ? `คอร์ท ${court.name} ยังมีผู้เล่นอยู่ ต้องการลบคอร์ทและส่งผู้เล่นทั้งหมดกลับไปพักใช่หรือไม่?`
+    : `ต้องการลบคอร์ท ${court.name} ใช่หรือไม่?`;
+
+  if(!confirm(message))return;
+
+  state.courts.splice(courtIndex,1);
+  state.courts.forEach((c,index)=>c.id=index+1);
+  state.courtCount=state.courts.length;
+
+  syncStatuses();
+  save();
+  render();
+}
+
 function bind(){
+  document.querySelectorAll(".tab-button").forEach(button=>{
+    button.onclick=()=>showTab(button.dataset.tab);
+  });
   $("#addPlayer").onclick=addPlayer;
   $("#exportData").onclick=exportData;
   $("#importData").onclick=()=>$("#importFile").click();
@@ -614,6 +650,7 @@ function bind(){
   document.querySelectorAll(".edit-name").forEach(b=>b.onclick=()=>editPlayerName(+b.dataset.id));
   document.querySelectorAll(".edit-lv").forEach(b=>b.onclick=()=>editPlayerLevel(+b.dataset.id));
   document.querySelectorAll(".remove").forEach(b=>b.onclick=()=>removePlayer(+b.dataset.id));
+  document.querySelectorAll(".delete-court").forEach(b=>b.onclick=()=>deleteCourt(+b.dataset.id));
   document.querySelectorAll(".start").forEach(b=>b.onclick=()=>startCourt(+b.dataset.id));
   document.querySelectorAll(".rotate").forEach(b=>b.onclick=()=>rotate(+b.dataset.id));
   document.querySelectorAll(".end").forEach(b=>b.onclick=()=>endCourt(+b.dataset.id));
@@ -641,6 +678,10 @@ function render(){
   $("#statPlay").textContent=state.players.filter(p=>p.status==="เล่น").length;
   $("#statRest").textContent=state.players.filter(p=>p.status==="พัก").length;
   bind();
+  let activeTab="homeTab";
+  try{activeTab=localStorage.getItem("katoonz_active_tab")||"homeTab"}catch{}
+  if(!document.getElementById(activeTab))activeTab="homeTab";
+  showTab(activeTab);
 }
 window.KTQM={
   getState:()=>JSON.parse(JSON.stringify(state)),
