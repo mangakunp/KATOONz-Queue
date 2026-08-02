@@ -1,16 +1,20 @@
-KATOONz x TOMO Queue Manager v4.0 Firebase Sync
+KATOONz x TOMO Queue Manager v4.1 Firebase Fix
 
-ใหม่:
-- ซิงก์ PC ↔ iPad ↔ Android ผ่าน Firebase Realtime Database
-- ส่งขึ้น Cloud / ดึงจาก Cloud
-- ซิงก์อัตโนมัติ
-- ใช้รหัสก๊วนเดียวกันทุกเครื่อง
-- แยกปุ่ม “แก้ชื่อ” และ “ปรับ Lv.” ทั้งสมาชิกโปรดและผู้เล่นวันนี้
-- ยังใช้งานออฟไลน์ได้
-- มี database.rules.json และคู่มือ FIREBASE_SETUP_TH.txt
+แก้ปัญหา:
+- ดึงข้อมูลไม่สำเร็จ: รูปแบบข้อมูลไม่ถูกต้อง
+- รองรับข้อมูล Firebase ที่ส่ง array กลับมาเป็น object
+- รองรับ players/courts/favorites/history ที่เป็น null หรือว่าง
+- รองรับข้อมูล Cloud แบบเก่าและแบบใหม่
+- ปรับ slots ของคอร์ทให้ครบ 4 ตำแหน่งอัตโนมัติ
 
-เริ่มต้น:
-1. อ่าน FIREBASE_SETUP_TH.txt
-2. สร้าง Firebase Project และ Realtime Database
-3. ใส่ config ใน firebase-config.js
-4. อัปโหลดไฟล์ทั้งหมดขึ้น GitHub Pages
+หลังอัปเดต:
+1. แตก ZIP
+2. ใส่ Firebase config จริงใน firebase-config.js
+3. อัปโหลดไฟล์ทั้งหมดทับไฟล์เดิมบน GitHub
+4. Commit changes
+5. ปิด Web App ทุกเครื่องแล้วเปิดใหม่
+6. ที่เครื่องซึ่งมีข้อมูลถูกต้องที่สุด กด “ส่งขึ้น Cloud” หนึ่งครั้ง
+7. ที่เครื่องอื่นกด “ดึงจาก Cloud”
+
+หมายเหตุ:
+firebase-config.js ใน ZIP เป็นไฟล์ตัวอย่าง หากอัปโหลดทับไฟล์เดิม ต้องนำ config จริงของคุณใส่กลับก่อน Commit

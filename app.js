@@ -645,9 +645,12 @@ function render(){
 window.KTQM={
   getState:()=>JSON.parse(JSON.stringify(state)),
   replaceState:(newState)=>{
-    if(!newState || !Array.isArray(newState.players) || !Array.isArray(newState.courts)) throw new Error("รูปแบบข้อมูลไม่ถูกต้อง");
+    if(!newState || typeof newState!=="object")throw new Error("รูปแบบข้อมูลไม่ถูกต้อง");
+    if(!Array.isArray(newState.players))newState.players=[];
+    if(!Array.isArray(newState.courts))newState.courts=[];
     if(!Array.isArray(newState.favorites))newState.favorites=[];
     if(!Array.isArray(newState.history))newState.history=[];
+    newState.courtCount=newState.courts.length;
     state=newState;
     syncStatuses();
     save();

@@ -1,5 +1,5 @@
 // วาง Firebase configuration ของคุณแทนค่าด้านล่าง
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// Firebase Console > Project settings > Your apps > SDK setup and configuration
 window.KTQM_FIREBASE_CONFIG = {
   apiKey: "AIzaSyBJBvHsDYZKMQzuv8IqIE9xBxg2MeYvE4g",
   authDomain: "katoonz-tomo-queue.firebaseapp.com",

@@ -53,6 +53,70 @@
     return c;
   }
 
+
+  function collectionToArray(value){
+    if(Array.isArray(value))return value.filter(v=>v!=null);
+    if(value==null)return [];
+    if(typeof value==="object"){
+      return Object.keys(value)
+        .sort((a,b)=>{
+          const an=Number(a),bn=Number(b);
+          if(Number.isFinite(an)&&Number.isFinite(bn))return an-bn;
+          return String(a).localeCompare(String(b));
+        })
+        .map(k=>value[k])
+        .filter(v=>v!=null);
+    }
+    return [];
+  }
+
+  function normalizeCloudState(raw){
+    // รองรับกรณีส่งมาทั้ง {state:{...}} และกรณีส่งเฉพาะ state
+    const source=(raw && raw.state && typeof raw.state==="object") ? raw.state : raw;
+    if(!source || typeof source!=="object"){
+      throw new Error("ไม่พบข้อมูลก๊วนใน Cloud");
+    }
+
+    const normalized={
+      ...source,
+      players:collectionToArray(source.players),
+      favorites:collectionToArray(source.favorites),
+      history:collectionToArray(source.history),
+      courts:collectionToArray(source.courts)
+    };
+
+    normalized.players=normalized.players.map((p,index)=>({
+      id:Number(p?.id) || (index+1),
+      name:String(p?.name || ("ผู้เล่น "+(index+1))),
+      lv:[1,2,3].includes(Number(p?.lv)) ? Number(p.lv) : 2,
+      games:Number(p?.games) || 0,
+      status:p?.status==="เล่น" ? "เล่น" : "พัก"
+    }));
+
+    normalized.favorites=normalized.favorites.map((f,index)=>({
+      id:Number(f?.id) || (Date.now()+index),
+      name:String(f?.name || ("สมาชิก "+(index+1))),
+      lv:[1,2,3].includes(Number(f?.lv)) ? Number(f.lv) : 2
+    }));
+
+    normalized.history=normalized.history.map((h,index)=>({
+      id:Number(h?.id) || (Date.now()+index),
+      courtName:String(h?.courtName || "-"),
+      playerIds:collectionToArray(h?.playerIds).map(Number).filter(Number.isFinite),
+      finishedAt:h?.finishedAt || new Date().toISOString()
+    }));
+
+    normalized.courts=normalized.courts.map((c,index)=>({
+      id:index+1,
+      name:String(c?.name || (index+1)),
+      slots:collectionToArray(c?.slots).concat([null,null,null,null]).slice(0,4)
+        .map(v=>v==null?null:Number(v))
+    }));
+
+    normalized.courtCount=normalized.courts.length;
+    return normalized;
+  }
+
   async function upload(){
     const code=validCode();
     if(!code || !db)return;
@@ -75,8 +139,9 @@
     try{
       setStatus("กำลังดึง...");
       const snap=await db.ref("groups/"+code+"/state").once("value");
-      const data=snap.val();
-      if(!data)return alert("ยังไม่มีข้อมูล Cloud สำหรับรหัสนี้");
+      const raw=snap.val();
+      if(!raw)return alert("ยังไม่มีข้อมูล Cloud สำหรับรหัสนี้");
+      const data=normalizeCloudState(raw);
       applyingRemote=true;
       window.KTQM.replaceState(data);
       applyingRemote=false;
@@ -85,7 +150,7 @@
     }catch(e){
       applyingRemote=false;
       setStatus("ดึงไม่สำเร็จ","error");
-      alert("ดึงข้อมูลไม่สำเร็จ: "+e.message);
+      alert("ดึงข้อมูลไม่สำเร็จ: "+e.message+"\n\nแนะนำ: เปิดเครื่องที่มีข้อมูลถูกต้อง แล้วกด ส่งขึ้น Cloud ใหม่ 1 ครั้ง");
     }
   }
 
@@ -102,8 +167,9 @@
     if(!code || !db)return;
     unsubscribeRef=db.ref("groups/"+code+"/state");
     unsubscribeRef.on("value",snap=>{
-      const data=snap.val();
-      if(!data)return;
+      const raw=snap.val();
+      if(!raw)return;
+      const data=normalizeCloudState(raw);
       const remoteJson=JSON.stringify(data);
       if(remoteJson===lastUploadedJson)return;
       applyingRemote=true;
