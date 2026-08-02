@@ -769,8 +769,42 @@ window.KTQM={
   saveLocal:save,
   render
 };
+function setCompactMode(enabled) {
+  document.body.classList.toggle("compact-mode", enabled);
 
+  const button = document.getElementById("compactToggle");
+
+  if (button) {
+    button.textContent = enabled
+      ? "📱 ปิดโหมดกระชับ"
+      : "📱 โหมดกระชับ";
+  }
+
+  localStorage.setItem(
+    "katoonz_compact_mode",
+    enabled ? "on" : "off"
+  );
+}
+
+function setupCompactMode() {
+  const button = document.getElementById("compactToggle");
+
+  if (!button) return;
+
+  const saved =
+    localStorage.getItem("katoonz_compact_mode") === "on";
+
+  setCompactMode(saved);
+
+  button.addEventListener("click", () => {
+    const isEnabled =
+      document.body.classList.contains("compact-mode");
+
+    setCompactMode(!isEnabled);
+  });
+}
 render();
+setupCompactMode();
 
 if("serviceWorker" in navigator){
   window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(console.error));

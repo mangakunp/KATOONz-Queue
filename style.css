@@ -61,12 +61,22 @@ h2{font-size:18px;margin-top:0}
 .star-btn.off{color:#98a2b3}
 .favorite-actions{display:flex;gap:6px;flex-wrap:wrap}
 .favorite-actions button{padding:7px 9px;font-size:13px}
-.modal{position:fixed;inset:0;z-index:999;display:flex;align-items:flex-end;justify-content:center}
-.modal.hidden{display:none}
-.modal-backdrop{position:absolute;inset:0;background:#0008}
-.modal-panel{position:relative;width:min(680px,100%);max-height:78vh;overflow:auto;background:var(--card);border-radius:18px 18px 0 0;padding:14px;box-shadow:0 -10px 35px #0003}
-.modal-head{display:flex;justify-content:space-between;align-items:center;gap:8px}
-.modal-head h2{margin:0}
+.modal{
+    position: fixed;
+    inset: 0;
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+.modal-panel{
+    width: min(95%,520px);
+    max-height:85vh;
+    overflow:auto;
+}
 .available-list{display:grid;gap:8px;margin-top:10px}
 .available-player{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:12px;border:2px solid var(--line);border-radius:12px;text-align:left}
 .available-player button{width:100%;text-align:left;background:transparent;color:inherit;padding:0}
@@ -148,3 +158,187 @@ h2{font-size:18px;margin-top:0}
 .level-choice-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:12px}
 .level-choice{min-height:58px;border:2px solid var(--line);font-size:17px}
 .queue-rule{margin-top:8px;padding:9px 10px;border-radius:10px;background:#ecfdf3;color:#166534;font-size:13px;font-weight:700}
+/* =========================
+   KATOONz v5 Mobile First
+   ========================= */
+
+body {
+  font-size: 15px;
+}
+
+header {
+  padding: 10px 8px;
+}
+
+header h1 {
+  font-size: 17px;
+}
+
+main {
+  padding: 8px;
+  padding-bottom: 80px;
+}
+
+.card {
+  padding: 10px;
+  margin-bottom: 8px;
+  border-radius: 12px;
+}
+
+button {
+  padding: 8px 10px;
+  font-size: 14px;
+}
+
+input,
+select {
+  padding: 8px 9px;
+  font-size: 14px;
+}
+
+.player-chip,
+.favorite-item {
+  padding: 7px 8px;
+  margin: 4px 0;
+}
+
+.slot {
+  min-height: 56px;
+  padding: 6px;
+}
+
+.slot-name {
+  font-size: 15px;
+}
+
+.slot-meta {
+  font-size: 11px;
+}
+
+/* โหมดกระชับ */
+body.compact-mode {
+  font-size: 13px;
+}
+
+body.compact-mode header {
+  padding: 7px 6px;
+}
+
+body.compact-mode header h1 {
+  font-size: 15px;
+}
+
+body.compact-mode main {
+  padding: 5px;
+  padding-bottom: 72px;
+}
+
+body.compact-mode .card {
+  padding: 7px;
+  margin-bottom: 5px;
+  border-radius: 9px;
+}
+
+body.compact-mode button {
+  padding: 6px 8px;
+  font-size: 12px;
+}
+
+body.compact-mode input,
+body.compact-mode select {
+  padding: 6px 7px;
+  font-size: 13px;
+}
+
+body.compact-mode .player-chip,
+body.compact-mode .favorite-item {
+  padding: 5px 6px;
+  margin: 3px 0;
+}
+
+body.compact-mode .slot {
+  min-height: 48px;
+  padding: 4px;
+}
+
+body.compact-mode .slot-name {
+  font-size: 13px;
+}
+
+body.compact-mode .slot-meta {
+  font-size: 10px;
+}
+
+@media (min-width: 768px) {
+  body {
+    font-size: 16px;
+  }
+
+  main {
+    padding: 14px;
+    padding-bottom: 90px;
+  }
+
+  header h1 {
+    font-size: 21px;
+  }
+}
+.bottom-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 1000;
+
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 4px;
+
+  padding: 6px;
+  padding-bottom: calc(6px + env(safe-area-inset-bottom));
+
+  background: rgba(255, 255, 255, 0.96);
+  border-top: 1px solid var(--line);
+  backdrop-filter: blur(10px);
+}
+
+.bottom-nav .tab-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+
+  min-height: 50px;
+  padding: 5px 3px;
+
+  border: 0;
+  background: transparent;
+  color: var(--muted);
+}
+
+.bottom-nav .tab-button span {
+  font-size: 20px;
+}
+
+.bottom-nav .tab-button small {
+  font-size: 11px;
+  margin-top: 2px;
+}
+
+.bottom-nav .tab-button.active {
+  background: var(--primary);
+  color: white;
+  border-radius: 10px;
+}
+
+body.compact-mode .bottom-nav .tab-button {
+  min-height: 43px;
+}
+
+body.compact-mode .bottom-nav .tab-button span {
+  font-size: 17px;
+}
+
+body.compact-mode .bottom-nav .tab-button small {
+  font-size: 10px;
+}
