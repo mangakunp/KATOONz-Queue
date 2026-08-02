@@ -6,6 +6,7 @@ function emptyState(){
     players:[],
     history:[],
     favorites:[],
+    queueCounter:0,
     courtCount:0,
     courts:[]
   };
@@ -14,18 +15,18 @@ function emptyState(){
 function defaults(){
   return{
     players:[
-      {id:1,name:"K'T",lv:3,games:0,status:"พัก"},
-      {id:2,name:"NT",lv:2,games:0,status:"พัก"},
-      {id:3,name:"TE'",lv:3,games:0,status:"พัก"},
-      {id:4,name:"BG",lv:1,games:0,status:"พัก"},
-      {id:5,name:"FM",lv:3,games:0,status:"พัก"},
-      {id:6,name:"WP",lv:2,games:0,status:"พัก"},
-      {id:7,name:"JN",lv:1,games:0,status:"พัก"},
-      {id:8,name:"CP",lv:3,games:0,status:"พัก"},
-      {id:9,name:"ND",lv:2,games:0,status:"พัก"},
-      {id:10,name:"OLF",lv:2,games:0,status:"พัก"},
-      {id:11,name:"TE",lv:3,games:0,status:"พัก"},
-      {id:12,name:"DM",lv:2,games:0,status:"พัก"}
+      {id:1,name:"K'T",lv:3,games:0,status:"พัก",queuePos:1},
+      {id:2,name:"NT",lv:2,games:0,status:"พัก",queuePos:2},
+      {id:3,name:"TE'",lv:3,games:0,status:"พัก",queuePos:3},
+      {id:4,name:"BG",lv:1,games:0,status:"พัก",queuePos:4},
+      {id:5,name:"FM",lv:3,games:0,status:"พัก",queuePos:5},
+      {id:6,name:"WP",lv:2,games:0,status:"พัก",queuePos:6},
+      {id:7,name:"JN",lv:1,games:0,status:"พัก",queuePos:7},
+      {id:8,name:"CP",lv:3,games:0,status:"พัก",queuePos:8},
+      {id:9,name:"ND",lv:2,games:0,status:"พัก",queuePos:9},
+      {id:10,name:"OLF",lv:2,games:0,status:"พัก",queuePos:10},
+      {id:11,name:"TE",lv:3,games:0,status:"พัก",queuePos:11},
+      {id:12,name:"DM",lv:2,games:0,status:"พัก",queuePos:12}
     ],
     history:[],
     favorites:[
@@ -42,6 +43,7 @@ function defaults(){
       {id:111,name:"TE",lv:3},
       {id:112,name:"DM",lv:2}
     ],
+    queueCounter:12,
     courtCount:2,
     courts:[
       {id:1,name:"5",slots:[null,null,null,null]},
@@ -54,12 +56,31 @@ let state;
 try{state=JSON.parse(localStorage.getItem(KEY))||defaults()}catch{state=defaults()}
 if(!Array.isArray(state.favorites))state.favorites=[];
 if(!Array.isArray(state.history))state.history=[];
+if(!Number.isFinite(Number(state.queueCounter)))state.queueCounter=0;
+state.players.forEach((p,index)=>{
+  if(!Number.isFinite(Number(p.queuePos))){
+    state.queueCounter+=1;
+    p.queuePos=state.queueCounter;
+  }
+});
 let drag={playerId:null,sourceCourt:null,sourceSlot:null,ghost:null};
 let replaceTarget={courtId:null,slotIndex:null};
 
 function save(){localStorage.setItem(KEY,JSON.stringify(state))}
 function player(id){return state.players.find(p=>p.id===id)}
 function nextId(){return Math.max(0,...state.players.map(p=>p.id))+1}
+function nextQueuePos(){
+  state.queueCounter=(Number(state.queueCounter)||0)+1;
+  return state.queueCounter;
+}
+function sendToBackOfQueue(p){
+  if(p)p.queuePos=nextQueuePos();
+}
+function waitingPlayers(){
+  return state.players
+    .filter(p=>p.status==="พัก")
+    .sort((a,b)=>(Number(a.queuePos)||0)-(Number(b.queuePos)||0)||a.name.localeCompare(b.name));
+}
 function syncStatuses(){
   state.players.forEach(p=>p.status="พัก");
   state.courts.forEach(c=>c.slots.forEach(id=>{if(id&&player(id))player(id).status="เล่น"}));
@@ -69,7 +90,7 @@ function esc(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",
 function addPlayer(){
   const name=$("#newName").value.trim();
   if(!name)return alert("กรุณาใส่ชื่อผู้เล่น");
-  state.players.push({id:nextId(),name,lv:+$("#newLv").value,games:0,status:"พัก"});
+  state.players.push({id:nextId(),name,lv:+$("#newLv").value,games:0,status:"พัก",queuePos:nextQueuePos()});
   $("#newName").value="";
   save();render();
 }
@@ -81,14 +102,41 @@ function editPlayerName(id){
     save();render();
   }
 }
-function editPlayerLevel(id){
-  const p=player(id);
-  const lv=prompt("Level ใหม่ (1-3)",String(p.lv));
-  if(["1","2","3"].includes(lv)){
-    p.lv=+lv;
-    save();render();
-  }
+let levelEditTarget={type:null,id:null};
+function openLevelModal(type,id){
+  levelEditTarget={type,id};
+  const item=type==="favorite"
+    ? state.favorites.find(x=>x.id===id)
+    : player(id);
+  if(!item)return;
+  $("#levelPlayerName").textContent="ผู้เล่น: "+item.name+" · Level ปัจจุบัน "+item.lv;
+  $("#levelModal").classList.remove("hidden");
+  $("#levelModal").setAttribute("aria-hidden","false");
 }
+function closeLevelModal(){
+  $("#levelModal").classList.add("hidden");
+  $("#levelModal").setAttribute("aria-hidden","true");
+  levelEditTarget={type:null,id:null};
+}
+function applyLevel(level){
+  const lv=Number(level);
+  if(![1,2,3].includes(lv))return;
+  const item=levelEditTarget.type==="favorite"
+    ? state.favorites.find(x=>x.id===levelEditTarget.id)
+    : player(levelEditTarget.id);
+  if(item){
+    item.lv=lv;
+    // ถ้าเป็นสมาชิกโปรดและมีชื่อเดียวกันในวันนี้ ให้ปรับตามด้วย
+    if(levelEditTarget.type==="favorite"){
+      const today=state.players.find(p=>p.name.trim().toLowerCase()===item.name.trim().toLowerCase());
+      if(today)today.lv=lv;
+    }
+    save();
+  }
+  closeLevelModal();
+  render();
+}
+function editPlayerLevel(id){openLevelModal("player",id)}
 function removePlayer(id){
   const p=player(id);
   if(p.status==="เล่น")return alert("ผู้เล่นกำลังเล่นอยู่");
@@ -138,7 +186,7 @@ function addFavoriteToday(fid){
   if(!f)return;
   const exists=state.players.some(p=>p.name.trim().toLowerCase()===f.name.trim().toLowerCase());
   if(exists)return alert(f.name+" อยู่ในรายชื่อวันนี้แล้ว");
-  state.players.push({id:nextId(),name:f.name,lv:f.lv,games:0,status:"พัก"});
+  state.players.push({id:nextId(),name:f.name,lv:f.lv,games:0,status:"พัก",queuePos:nextQueuePos()});
   save();render();
 }
 function removeFavorite(fid){
@@ -158,21 +206,13 @@ function editFavoriteName(fid){
     save();render();
   }
 }
-function editFavoriteLevel(fid){
-  const f=state.favorites.find(x=>x.id===fid);
-  if(!f)return;
-  const lv=prompt("Level ใหม่ (1-3)",String(f.lv));
-  if(["1","2","3"].includes(lv)){
-    f.lv=+lv;
-    save();render();
-  }
-}
+function editFavoriteLevel(fid){openLevelModal("favorite",fid)}
 function addAllFavorites(){
   let added=0;
   state.favorites.forEach(f=>{
     const exists=state.players.some(p=>p.name.trim().toLowerCase()===f.name.trim().toLowerCase());
     if(!exists){
-      state.players.push({id:nextId(),name:f.name,lv:f.lv,games:0,status:"พัก"});
+      state.players.push({id:nextId(),name:f.name,lv:f.lv,games:0,status:"พัก",queuePos:nextQueuePos()});
       added++;
     }
   });
@@ -229,57 +269,69 @@ function pairKey(a,b){
   return [a,b].sort((x,y)=>x-y).join("-");
 }
 function historyCounts(){
-  const partner={},opponent={};
+  const partner={},opponent={},sameLevel={};
   state.history.forEach(h=>{
     const ids=h.playerIds||[];
     if(ids.length!==4)return;
+    const ps=ids.map(id=>player(id));
     const [a,b,c,d]=ids;
     [pairKey(a,b),pairKey(c,d)].forEach(k=>partner[k]=(partner[k]||0)+1);
     [[a,c],[a,d],[b,c],[b,d]].forEach(x=>{
       const k=pairKey(x[0],x[1]);
       opponent[k]=(opponent[k]||0)+1;
     });
+    if(ps.every(Boolean)){
+      [[ps[0],ps[1]],[ps[2],ps[3]]].forEach(pair=>{
+        if(pair[0].lv===pair[1].lv){
+          const k=pairKey(pair[0].id,pair[1].id);
+          sameLevel[k]=(sameLevel[k]||0)+1;
+        }
+      });
+    }
   });
-  return{partner,opponent};
+  return{partner,opponent,sameLevel};
 }
 function chooseFour(){
-  const rest=state.players
-    .filter(p=>p.status==="พัก")
-    .sort((a,b)=>a.games-b.games||b.lv-a.lv||a.name.localeCompare(b.name));
-  if(rest.length<4)return null;
+  // เลือกตามเวลารอเท่านั้น ไม่พิจารณาจำนวนเกม
+  const queue=waitingPlayers();
+  if(queue.length<4)return null;
 
-  const pool=rest.slice(0,Math.min(10,rest.length));
+  const q=queue.slice(0,4);
   const counts=historyCounts();
-  let best=null,bestScore=Infinity;
+  const pairings=[
+    [q[0],q[1],q[2],q[3]],
+    [q[0],q[2],q[1],q[3]],
+    [q[0],q[3],q[1],q[2]]
+  ];
 
-  for(let i=0;i<pool.length;i++)
-  for(let j=i+1;j<pool.length;j++)
-  for(let k=j+1;k<pool.length;k++)
-  for(let m=k+1;m<pool.length;m++){
-    const q=[pool[i],pool[j],pool[k],pool[m]];
-    const pairings=[
-      [q[0],q[1],q[2],q[3]],
-      [q[0],q[2],q[1],q[3]],
-      [q[0],q[3],q[1],q[2]]
-    ];
+  let best=pairings[0];
+  let bestScore=Infinity;
 
-    pairings.forEach(z=>{
-      const teamDiff=Math.abs((z[0].lv+z[1].lv)-(z[2].lv+z[3].lv));
-      const gameSpread=Math.max(...z.map(p=>p.games))-Math.min(...z.map(p=>p.games));
-      const partnerRepeat=(counts.partner[pairKey(z[0].id,z[1].id)]||0)+(counts.partner[pairKey(z[2].id,z[3].id)]||0);
-      const opponentRepeat=
-        (counts.opponent[pairKey(z[0].id,z[2].id)]||0)+
-        (counts.opponent[pairKey(z[0].id,z[3].id)]||0)+
-        (counts.opponent[pairKey(z[1].id,z[2].id)]||0)+
-        (counts.opponent[pairKey(z[1].id,z[3].id)]||0);
+  pairings.forEach(z=>{
+    const partnerRepeat=
+      (counts.partner[pairKey(z[0].id,z[1].id)]||0)+
+      (counts.partner[pairKey(z[2].id,z[3].id)]||0);
 
-      const score=(teamDiff*20)+(gameSpread*8)+(partnerRepeat*12)+(opponentRepeat*3);
-      if(score<bestScore){
-        bestScore=score;
-        best=z;
-      }
-    });
-  }
+    const opponentRepeat=
+      (counts.opponent[pairKey(z[0].id,z[2].id)]||0)+
+      (counts.opponent[pairKey(z[0].id,z[3].id)]||0)+
+      (counts.opponent[pairKey(z[1].id,z[2].id)]||0)+
+      (counts.opponent[pairKey(z[1].id,z[3].id)]||0);
+
+    const sameLevelOveruse=
+      ((z[0].lv===z[1].lv) ? Math.max(0,(counts.sameLevel[pairKey(z[0].id,z[1].id)]||0)-1) : 0)+
+      ((z[2].lv===z[3].lv) ? Math.max(0,(counts.sameLevel[pairKey(z[2].id,z[3].id)]||0)-1) : 0);
+
+    // Level มีน้ำหนักต่ำมาก เน้นให้ทุกคนหมุนเวียนเจอกัน
+    const teamLevelDiff=Math.abs((z[0].lv+z[1].lv)-(z[2].lv+z[3].lv));
+    const score=(partnerRepeat*30)+(opponentRepeat*8)+(sameLevelOveruse*12)+(teamLevelDiff*1);
+
+    if(score<bestScore){
+      bestScore=score;
+      best=z;
+    }
+  });
+
   return best;
 }
 
@@ -304,6 +356,7 @@ function endCourt(id){
       finishedAt:new Date().toISOString()
     });
   }
+  ids.forEach(id=>sendToBackOfQueue(player(id)));
   c.slots=[null,null,null,null];
   syncStatuses();save();render();
 }
@@ -325,9 +378,14 @@ function movePlayer(targetCourt,targetSlot){
   const targetId=target?target.slots[targetSlot]:null;
   if(target){
     target.slots[targetSlot]=drag.playerId;
-    if(source)source.slots[drag.sourceSlot]=targetId||null;
+    if(source){
+      source.slots[drag.sourceSlot]=targetId||null;
+    }else if(targetId){
+      sendToBackOfQueue(player(targetId));
+    }
   }else if(source){
     source.slots[drag.sourceSlot]=null;
+    sendToBackOfQueue(player(drag.playerId));
   }
   syncStatuses();save();render();
 }
@@ -387,7 +445,7 @@ function openReplaceModal(courtId,slotIndex){
       <div class="available-player lv${p.lv}">
         <button class="replace-choice" data-id="${p.id}">
           <div><b>${esc(p.name)}</b> <span class="badge">Lv.${p.lv}</span></div>
-          <div class="slot-meta">เกม ${p.games}</div>
+          <div class="slot-meta">เกม ${p.games} <span class="queue-badge">คิว ${index+1}</span></div>
         </button>
       </div>`).join("")
     : '<div class="empty">ไม่มีผู้เล่นว่าง</div>';
@@ -411,7 +469,10 @@ function replaceWithPlayer(newPlayerId){
 
   const oldP=player(oldId);
   const newP=player(newPlayerId);
-  if(oldP)oldP.status="พัก";
+  if(oldP){
+    oldP.status="พัก";
+    sendToBackOfQueue(oldP);
+  }
   if(newP)newP.status="เล่น";
 
   syncStatuses();
@@ -482,7 +543,7 @@ function renderHistory(){
 }
 
 function renderWaiting(){
-  const arr=state.players.filter(p=>p.status==="พัก").sort((a,b)=>a.games-b.games||a.name.localeCompare(b.name));
+  const arr=waitingPlayers();
   $("#waiting").innerHTML=arr.length?arr.map(p=>`
     <div class="player-chip lv${p.lv}" data-player-id="${p.id}">
       <div><span class="chip-main">${esc(p.name)}</span> <span class="badge">Lv.${p.lv}</span><div class="slot-meta">เกม ${p.games}</div></div>
@@ -595,6 +656,9 @@ function bind(){
   document.querySelectorAll(".tab-button").forEach(button=>{
     button.onclick=()=>showTab(button.dataset.tab);
   });
+  $("#closeLevel").onclick=closeLevelModal;
+  $("#levelModal .modal-backdrop").onclick=closeLevelModal;
+  document.querySelectorAll(".level-choice").forEach(b=>b.onclick=()=>applyLevel(+b.dataset.level));
   $("#addPlayer").onclick=addPlayer;
   $("#exportData").onclick=exportData;
   $("#importData").onclick=()=>$("#importFile").click();
@@ -628,6 +692,7 @@ function bind(){
         players:[],
         favorites:savedFavorites,
         history:[],
+        queueCounter:0,
         courtCount:0,
         courts:[]
       };
@@ -693,6 +758,10 @@ window.KTQM={
     if(!Array.isArray(newState.history))newState.history=[];
     newState.courtCount=newState.courts.length;
     state=newState;
+    if(!Number.isFinite(Number(state.queueCounter)))state.queueCounter=0;
+    state.players.forEach(p=>{
+      if(!Number.isFinite(Number(p.queuePos)))p.queuePos=nextQueuePos();
+    });
     syncStatuses();
     save();
     render();

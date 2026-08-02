@@ -90,7 +90,8 @@
       name:String(p?.name || ("ผู้เล่น "+(index+1))),
       lv:[1,2,3].includes(Number(p?.lv)) ? Number(p.lv) : 2,
       games:Number(p?.games) || 0,
-      status:p?.status==="เล่น" ? "เล่น" : "พัก"
+      status:p?.status==="เล่น" ? "เล่น" : "พัก",
+      queuePos:Number(p?.queuePos) || (index+1)
     }));
 
     normalized.favorites=normalized.favorites.map((f,index)=>({
@@ -113,6 +114,11 @@
         .map(v=>v==null?null:Number(v))
     }));
 
+    normalized.queueCounter=Math.max(
+      Number(source.queueCounter)||0,
+      ...normalized.players.map(p=>Number(p.queuePos)||0),
+      0
+    );
     normalized.courtCount=normalized.courts.length;
     return normalized;
   }
