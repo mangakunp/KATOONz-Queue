@@ -15,17 +15,36 @@
 <body>
   <header>
     <h1>🏸 KATOONz x TOMO Queue Manager</h1>
-    <small>v3.0 PWA Offline · Smart Queue</small>
+    <small>v3.1 PWA Offline · Tab Navigation</small>
   </header>
 
+  <nav class="tab-bar" aria-label="เมนูหลัก">
+    <button class="tab-button active" data-tab="homeTab">🏠 สมาชิก</button>
+    <button class="tab-button" data-tab="todayTab">👥 วันนี้</button>
+    <button class="tab-button" data-tab="courtsTab">🏸 สนาม</button>
+  </nav>
+
   <main>
-    <section class="card stats">
+<section id="homeTab" class="tab-panel active">
+<section class="card">
+          <div class="section-head">
+            <h2>รายชื่อโปรด ⭐ <span id="favoriteCount" class="count-badge">0 คน</span></h2>
+            <div class="favorite-head-actions">
+              <button id="addFavoriteDirect" class="primary compact">➕ เพิ่มรายชื่อโปรด</button>
+              <button id="addAllFavorites" class="secondary compact">เพิ่มทั้งหมด</button>
+            </div>
+          </div>
+          <div id="favorites" class="favorites-zone"></div>
+          <p class="hint">กดดาวข้างชื่อผู้เล่นเพื่อบันทึกไว้ถาวร ครั้งต่อไปแตะ “เพิ่มวันนี้” ได้ทันที</p>
+        </section>
+</section>
+<section id="todayTab" class="tab-panel">
+<section class="card stats">
       <div><span>ผู้เล่น</span><b id="statAll">0</b></div>
       <div><span>กำลังเล่น</span><b id="statPlay">0</b></div>
       <div><span>พัก</span><b id="statRest">0</b></div>
     </section>
-
-    <section class="card controls">
+<section class="card controls">
       <div class="row">
         <input id="newName" placeholder="ชื่อผู้เล่น">
         <select id="newLv">
@@ -55,41 +74,25 @@
         ลากผู้เล่นข้ามคอร์ท หรือกลับไปพื้นที่คนพักได้
       </p>
     </section>
-
-    <div class="layout">
-      <section>
-        <section class="card">
-          <div class="section-head">
-            <h2>รายชื่อโปรด ⭐ <span id="favoriteCount" class="count-badge">0 คน</span></h2>
-            <div class="favorite-head-actions">
-              <button id="addFavoriteDirect" class="primary compact">➕ เพิ่มรายชื่อโปรด</button>
-              <button id="addAllFavorites" class="secondary compact">เพิ่มทั้งหมด</button>
-            </div>
-          </div>
-          <div id="favorites" class="favorites-zone"></div>
-          <p class="hint">กดดาวข้างชื่อผู้เล่นเพื่อบันทึกไว้ถาวร ครั้งต่อไปแตะ “เพิ่มวันนี้” ได้ทันที</p>
-        </section>
-
-        <section class="card">
+<section class="card">
           <h2>คนพัก</h2>
           <div id="waiting" class="waiting-zone" data-drop="waiting"></div>
         </section>
-      </section>
-
-      <section class="card">
+</section>
+<section id="courtsTab" class="tab-panel">
+<section class="card">
         <h2>คอร์ท</h2>
         <div id="courts"></div>
       </section>
-    </div>
-
-    <section class="card">
+<section class="card">
       <div class="section-head">
         <h2>ประวัติรอบเล่น <span id="historyCount" class="count-badge">0 เกม</span></h2>
         <button id="clearHistory" class="danger compact">ล้างประวัติ</button>
       </div>
       <div id="historyList" class="history-list"></div>
     </section>
-  </main>
+</section>
+</main>
 
   <div id="favoriteModal" class="modal hidden" aria-hidden="true">
     <div class="modal-backdrop"></div>

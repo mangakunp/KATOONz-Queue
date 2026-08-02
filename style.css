@@ -92,3 +92,10 @@ h2{font-size:18px;margin-top:0}
 @media(max-width:560px){
   .history-top{align-items:flex-start;flex-direction:column}
 }
+
+.tab-bar{position:sticky;top:62px;z-index:9;display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:8px 12px;background:var(--bg);border-bottom:1px solid var(--line)}
+.tab-button{background:#e8eef5;color:#344054;border:1px solid var(--line);padding:10px 8px}
+.tab-button.active{background:var(--primary);color:#fff;border-color:var(--primary)}
+.tab-panel{display:none}.tab-panel.active{display:block}
+.court{position:relative}.delete-court{position:absolute;top:7px;right:7px;width:32px;height:32px;padding:0;border-radius:999px;background:#fee4e2;color:var(--danger);font-size:20px;line-height:1}.court-head{padding-right:38px}
+@media(max-width:480px){.tab-bar{top:58px;padding:6px}.tab-button{font-size:13px;padding:9px 4px}}
