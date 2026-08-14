@@ -1,3 +1,16 @@
+KATOONz x TOMO Queue Manager v5.4 — iPad Layout OFFLINE
+
+ใหม่:
+- หน้า 2 ตัด “เลือกผู้เล่นวันนี้” ออก
+- เลือก/นำออกวันนี้จากหน้า 1 รายชื่อผู้เล่นเท่านั้น
+- หน้า 2 เรียง สนาม → คิวผู้เล่น → จำนวนลูก
+- iPad แสดงสนาม 2 คอลัมน์เมื่อพื้นที่พอ
+- จุดสี Level:
+  Lv.3 = น้ำตาล
+  Lv.2 = เขียว
+  Lv.1 = ชมพู
+- Smart Rotation / History / Cost / QR / Offline-first ยังอยู่ครบ
+
 KATOONz x TOMO Queue Manager v5.3 — HISTORY OFFLINE
 
 KATOONz x TOMO Queue Manager v5.2 — Smart Rotation OFFLINE

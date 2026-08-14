@@ -100,3 +100,25 @@ main{padding:18px;max-width:1500px;margin:auto}.page{display:none}.page.active{d
   .history-stats{grid-template-columns:repeat(2,1fr)}
   .history-day-head{align-items:flex-start;flex-direction:column}
 }
+
+/* ===== v5.4 iPad-first play layout ===== */
+.today-layout{display:grid;grid-template-columns:1fr;gap:14px}
+.today-layout .court-section{order:1}
+.today-layout .queue-section{order:2}
+.today-layout .shuttle-section{order:3}
+
+.level-dot{
+  width:14px;height:14px;border-radius:50%;
+  display:inline-block;flex:0 0 14px;border:1px solid #0000000d
+}
+.level-dot.lv1{background:#f58ab6}
+.level-dot.lv2{background:#72c96b}
+.level-dot.lv3{background:#b66a2d}
+.member-level-dot-wrap{display:flex;align-items:center;gap:7px}
+
+@media(min-width:700px) and (max-width:1180px){
+  .court-grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:699px){
+  .court-grid{grid-template-columns:1fr}
+}

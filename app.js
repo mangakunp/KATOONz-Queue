@@ -447,10 +447,7 @@ function swapAcrossCourts(otherCourtId,otherSlot){
 $("#addCourtBtn").onclick=addCourt;
 $("#shuttlePlus").onclick=()=>{state.shuttleCount++;save();render()};
 $("#shuttleMinus").onclick=()=>{state.shuttleCount=Math.max(0,state.shuttleCount-1);save();render()};
-$("#selectAllTodayBtn").onclick=()=>{
-  state.members.forEach(m=>{if(!todayPlayer(m.id))addToday(m.id)});
-  save();render();
-};
+
 
 ["courtRate","costCourtCount","hoursPlayed","shuttleRate","otherCost"].forEach(id=>{
   $("#"+id).oninput=()=>{
@@ -534,7 +531,7 @@ function renderMembers(){
     const t=todayPlayer(m.id);
     return `<div class="member-row">
       <div class="member-no">${i+1}</div>
-      <div><div class="member-name">${esc(m.name)}</div><small class="status-today">${t?"● อยู่ในวันนี้แล้ว":""}</small></div>
+      <div><div class="member-level-dot-wrap"><span class="level-dot lv${m.lv}"></span><div class="member-name">${esc(m.name)}</div></div><small class="status-today">${t?"● อยู่ในวันนี้แล้ว":""}</small></div>
       <div><span class="lv-badge lv${m.lv}">Lv.${m.lv}</span></div>
       <div>${t?'<span class="status-chip status-wait">วันนี้</span>':'<span class="muted">—</span>'}</div>
       <div class="member-actions">
@@ -551,17 +548,6 @@ function renderMembers(){
   $$(".edit-lv").forEach(b=>b.onclick=()=>quickLevel(+b.dataset.id));
   $$(".delete-member").forEach(b=>b.onclick=()=>deleteMember(+b.dataset.id));
 }
-function renderSelector(){
-  $("#todaySelector").innerHTML=state.members.length?state.members.map(m=>{
-    const p=todayPlayer(m.id);
-    return `<button class="selector-card ${p?"selected":""}" data-id="${m.id}">
-      ${p?'<span class="check">●</span>':''}
-      <span class="avatar">${esc(m.name.slice(0,2).toUpperCase())}</span>
-      <b>${esc(m.name)}</b><small>Lv.${m.lv}${p?" · มา "+formatTime(p.joinedAt):""}</small>
-    </button>`
-  }).join(""):'<div class="empty-state">เพิ่มสมาชิกก่อน</div>';
-  $$(".selector-card").forEach(b=>b.onclick=()=>{const id=+b.dataset.id;todayPlayer(id)?removeToday(id):addToday(id)});
-}
 function renderQueue(){
   const sorted=[...state.today].sort((a,b)=>{
     const order={waiting:0,called:1,playing:2,paused:3};
@@ -574,7 +560,7 @@ function renderQueue(){
       p.status==="playing"?["เล่น","status-play"]:["พักเอง","status-pause"];
     return `<div class="queue-row">
       <div class="queue-pos">#${i+1}${p.status==="waiting"&&i<4?'<br><span class="smart-badge">คิวถัดไป</span>':""}</div>
-      <div><b>${esc(m?.name)}</b> <span class="lv-badge lv${m?.lv}">Lv.${m?.lv}</span></div>
+      <div class="member-level-dot-wrap"><span class="level-dot lv${m?.lv}"></span><b>${esc(m?.name)}</b> <span class="lv-badge lv${m?.lv}">Lv.${m?.lv}</span></div>
       <div class="queue-time">มา ${formatTime(p.joinedAt)}</div>
       <div class="queue-games">🎮 ${p.games}</div>
       <div class="queue-wait">⏱ ${p.status==="waiting"?waitingMinutes(p):0} นาที</div>
@@ -740,7 +726,7 @@ function renderStats(){
   $("#shuttleCount").textContent=state.shuttleCount;
 }
 function render(){
-  renderMembers();renderSelector();renderQueue();renderCourts();renderCosts();renderStats();renderHistoryArchive();
+  renderMembers();renderQueue();renderCourts();renderCosts();renderStats();renderHistoryArchive();
 }
 render();
 setInterval(()=>{renderQueue()},60000);

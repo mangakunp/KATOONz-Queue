@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>KATOONz x TOMO Queue Manager v5.3</title>
+  <title>KATOONz x TOMO Queue Manager v5.4</title>
 </head>
 <body>
 <div class="app-shell">
@@ -101,18 +101,9 @@
         </div>
 
         <div class="today-layout">
-          <section class="card">
-            <div class="section-head">
-              <div>
-                <h2>✅ เลือกผู้เล่นวันนี้</h2>
-                <p>กดเพิ่มวันนี้ ระบบจะบันทึกเวลาเข้าก๊วนอัตโนมัติ</p>
-              </div>
-              <button id="selectAllTodayBtn" class="soft-btn">เลือกสมาชิกทั้งหมด</button>
-            </div>
-            <div id="todaySelector" class="selector-grid"></div>
-          </section>
+          
 
-          <section class="card">
+          <section class="card queue-section">
             <div class="section-head">
               <div>
                 <h2>⏱ คิวผู้เล่นวันนี้</h2>
@@ -126,7 +117,7 @@
             <div id="todayQueue" class="queue-list"></div>
           </section>
 
-          <section class="card">
+          <section class="card court-section">
             <div class="section-head">
               <div>
                 <h2>🏟️ สนาม</h2>
@@ -137,7 +128,7 @@
             <div id="courtList" class="court-grid"></div>
           </section>
 
-          <section class="card compact-card">
+          <section class="card compact-card shuttle-section">
             <div class="section-head">
               <div>
                 <h2>🏸 จำนวนลูกที่ใช้</h2>

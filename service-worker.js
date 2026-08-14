@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-3-history-offline";
+const CACHE="katoonz-tomo-v5-4-ipad-offline";
 const ASSETS=[
   "./",
   "./index.html",
