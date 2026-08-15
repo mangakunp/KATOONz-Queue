@@ -1,9 +1,9 @@
-const CACHE="katoonz-tomo-v5-4-ipad-offline";
+const CACHE="katoonz-tomo-v5-5-usercloud";
 const ASSETS=[
   "./",
   "./index.html",
   "./style.css",
-  "./app.js",
+  "./app.js","./firebase-config.js","./firebase-sync.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png"

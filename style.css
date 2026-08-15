@@ -122,3 +122,14 @@ main{padding:18px;max-width:1500px;margin:auto}.page{display:none}.page.active{d
 @media(max-width:699px){
   .court-grid{grid-template-columns:1fr}
 }
+
+.cloud-card{grid-column:1/-1}
+.cloud-auth{display:grid;grid-template-columns:1fr 1fr;gap:8px}
+.cloud-auth input{border:1px solid var(--line);border-radius:10px;padding:10px}
+.cloud-actions{display:flex;gap:7px;flex-wrap:wrap;margin-top:9px}
+.cloud-auth .cloud-actions{grid-column:1/-1;margin-top:0}
+.cloud-user{padding:10px;border-radius:10px;background:#f3f8f7}
+.cloud-status{margin-top:10px;font-size:11px;font-weight:700;color:var(--muted)}
+.cloud-status.ok{color:#347d65}.cloud-status.bad{color:#b34b5c}
+.cloud-note{font-size:10px;color:var(--muted);margin-top:5px}
+@media(max-width:620px){.cloud-auth{grid-template-columns:1fr}}

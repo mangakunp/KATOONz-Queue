@@ -1,11 +1,9 @@
 {
   "rules": {
-    ".read": false,
-    ".write": false,
-    "groups": {
-      "$groupId": {
-        ".read": "$groupId.length >= 16",
-        ".write": "$groupId.length >= 16"
+    "users": {
+      "$uid": {
+        ".read": "auth !== null && auth.uid === $uid",
+        ".write": "auth !== null && auth.uid === $uid"
       }
     }
   }
