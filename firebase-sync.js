@@ -8,7 +8,7 @@
     if(el){el.textContent=t;el.className="cloud-status "+(ok?"ok":"bad");}
   }
   function localState(){
-    try { return JSON.parse(localStorage.getItem("ktqm_v5_state") || "null"); }
+    try { return JSON.parse(localStorage.getItem("katoonz_tomo_v5_offline") || "null"); }
     catch(e){ return null; }
   }
   function stripQr(obj){
@@ -78,7 +78,7 @@
       const snap=await db.ref("users/"+user.uid+"/queueData").once("value");
       const v=snap.val();
       if(!v||!v.state)return alert("บัญชีนี้ยังไม่มีข้อมูล Cloud");
-      localStorage.setItem("ktqm_v5_state",JSON.stringify(v.state));
+      localStorage.setItem("katoonz_tomo_v5_offline",JSON.stringify(v.state));
       msg("โหลดจาก Cloud สำเร็จ ✓");
       location.reload();
     }catch(e){alert("โหลด Cloud ไม่สำเร็จ: "+e.message);}

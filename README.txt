@@ -1,3 +1,19 @@
+KATOONz x TOMO Queue Manager v5.5.1 — Login Fix
+
+แก้ไข:
+- ย้าย User Cloud Sync ไปไว้ด้านบนหน้า 1 รายชื่อผู้เล่น
+- เปิดเว็บแล้วเห็น Login/สมัคร User ได้ทันที
+- แก้ชื่อ Local Storage ของ Cloud Sync ให้ตรงกับตัวแอป
+- Save Cloud / Load Cloud ใช้ข้อมูลเดียวกับ Offline app แล้ว
+- Offline-first ยังทำงานเหมือนเดิม
+- Firebase Login ใช้ได้เมื่อมีอินเทอร์เน็ต
+
+หลังอัป GitHub:
+1. อัปโหลดไฟล์ทั้งหมดทับของเดิม
+2. Commit changes
+3. เปิดเว็บ
+4. Hard Refresh (Ctrl+Shift+R)
+5. ถ้ายังเก่า ให้ Unregister Service Worker แล้ว Clear Site Data
 KATOONz x TOMO Queue Manager v5.4 — iPad Layout OFFLINE
 
 ใหม่:

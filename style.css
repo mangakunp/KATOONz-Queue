@@ -133,3 +133,11 @@ main{padding:18px;max-width:1500px;margin:auto}.page{display:none}.page.active{d
 .cloud-status.ok{color:#347d65}.cloud-status.bad{color:#b34b5c}
 .cloud-note{font-size:10px;color:var(--muted);margin-top:5px}
 @media(max-width:620px){.cloud-auth{grid-template-columns:1fr}}
+
+/* v5.5.1 Login visibility */
+#playersPage .cloud-card{
+  border:2px solid #bfe6df;
+  background:linear-gradient(135deg,#f7fffd,#f7f4ff);
+}
+#playersPage .cloud-card h2{color:#315f59}
+.cloud-status{padding:7px 9px;border-radius:9px;background:#f4f7f8;display:inline-block}
