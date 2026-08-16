@@ -11,9 +11,78 @@
     try { return JSON.parse(localStorage.getItem("katoonz_tomo_v5_offline") || "null"); }
     catch(e){ return null; }
   }
-  function stripQr(obj){
+  function toArray(value){
+    if(Array.isArray(value))return value.filter(v=>v!=null);
+    if(value==null)return [];
+    if(typeof value==="object"){
+      return Object.keys(value)
+        .sort((a,b)=>Number(a)-Number(b))
+        .map(k=>value[k])
+        .filter(v=>v!=null);
+    }
+    return [];
+  }
+
+  function encodeForCloud(obj){
     const c=JSON.parse(JSON.stringify(obj||{}));
-    if(c.costs) c.costs.qrData="";
+    if(c.costs)c.costs.qrData="";
+
+    // Firebase ใช้ null เป็นคำสั่งลบข้อมูล จึงใช้ 0 เป็น sentinel ช่องสนามว่าง
+    c.courts=toArray(c.courts).map((court,index)=>({
+      ...court,
+      id:Number(court?.id)||index+1,
+      name:String(court?.name ?? (index+1)),
+      state:court?.state||"idle",
+      slots:(Array.isArray(court?.slots)?court.slots:[null,null,null,null])
+        .concat([null,null,null,null]).slice(0,4)
+        .map(v=>Number(v)||0)
+    }));
+
+    return c;
+  }
+
+  function decodeFromCloud(raw){
+    const c=JSON.parse(JSON.stringify(raw||{}));
+
+    c.members=toArray(c.members);
+    c.today=toArray(c.today);
+    c.history=toArray(c.history);
+    c.courts=toArray(c.courts).map((court,index)=>{
+      const src=(court && typeof court==="object")?court:{};
+
+      let slots;
+      if(Array.isArray(src.slots)){
+        slots=src.slots.slice(0,4);
+      }else if(src.slots && typeof src.slots==="object"){
+        slots=[0,1,2,3].map(i=>src.slots[i] ?? src.slots[String(i)] ?? 0);
+      }else{
+        slots=[0,0,0,0];
+      }
+
+      slots=slots.concat([0,0,0,0]).slice(0,4).map(v=>{
+        const n=Number(v);
+        return Number.isFinite(n)&&n>0?n:null;
+      });
+
+      return {
+        ...src,
+        id:Number(src.id)||index+1,
+        name:String(src.name ?? (index+1)),
+        slots,
+        state:["idle","called","playing"].includes(src.state)
+          ? src.state
+          : (slots.some(Boolean)?"called":"idle")
+      };
+    });
+
+    // ข้อมูล Cloud รุ่นเก่าที่สนามหายหมด
+    if(c.courts.length===0){
+      c.courts=[
+        {id:1,name:"1",slots:[null,null,null,null],state:"idle"},
+        {id:2,name:"2",slots:[null,null,null,null],state:"idle"}
+      ];
+    }
+
     return c;
   }
   async function init(){
@@ -31,9 +100,11 @@
   }
   function renderAuth(){
     const out=$("#authLoggedOut"), inn=$("#authLoggedIn");
+    const card=document.querySelector(".cloud-card");
     if(!out||!inn)return;
     out.classList.toggle("hidden",!!user);
     inn.classList.toggle("hidden",!user);
+    if(card)card.classList.toggle("logged-in",!!user);
     if(user){
       $("#cloudUserEmail").textContent=user.email||"ผู้ใช้";
       msg("พร้อมซิงค์ Cloud");
@@ -64,9 +135,9 @@
     if(!confirm("บันทึกข้อมูลในเครื่องขึ้น Cloud ของบัญชีนี้ใช่ไหม?"))return;
     try{
       await db.ref("users/"+user.uid+"/queueData").set({
-        state:stripQr(s),
+        state:encodeForCloud(s),
         updatedAt:firebase.database.ServerValue.TIMESTAMP,
-        version:"5.5"
+        version:"5.5.2"
       });
       msg("บันทึกขึ้น Cloud สำเร็จ ✓");
     }catch(e){alert("บันทึก Cloud ไม่สำเร็จ: "+e.message);}
@@ -78,7 +149,8 @@
       const snap=await db.ref("users/"+user.uid+"/queueData").once("value");
       const v=snap.val();
       if(!v||!v.state)return alert("บัญชีนี้ยังไม่มีข้อมูล Cloud");
-      localStorage.setItem("katoonz_tomo_v5_offline",JSON.stringify(v.state));
+      const migrated=decodeFromCloud(v.state);
+      localStorage.setItem("katoonz_tomo_v5_offline",JSON.stringify(migrated));
       msg("โหลดจาก Cloud สำเร็จ ✓");
       location.reload();
     }catch(e){alert("โหลด Cloud ไม่สำเร็จ: "+e.message);}

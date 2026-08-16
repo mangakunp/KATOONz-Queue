@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-5-1-loginfix";
+const CACHE="katoonz-tomo-v5-5-3-compactlogin";
 const ASSETS=[
   "./",
   "./index.html",

@@ -141,3 +141,59 @@ main{padding:18px;max-width:1500px;margin:auto}.page{display:none}.page.active{d
 }
 #playersPage .cloud-card h2{color:#315f59}
 .cloud-status{padding:7px 9px;border-radius:9px;background:#f4f7f8;display:inline-block}
+
+/* ===== v5.5.3 Compact Login ===== */
+.cloud-card.logged-in{
+  padding:8px 12px;
+  border-width:1px;
+  background:#f7fbfa;
+}
+.cloud-card.logged-in .section-head,
+.cloud-card.logged-in #authLoggedOut,
+.cloud-card.logged-in .cloud-note{
+  display:none!important;
+}
+.cloud-card.logged-in #authLoggedIn{
+  display:flex!important;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+}
+.cloud-card.logged-in .cloud-user{
+  padding:5px 8px;
+  background:transparent;
+  white-space:nowrap;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  min-width:0;
+}
+.cloud-card.logged-in .cloud-actions{
+  margin-top:0;
+  flex-wrap:nowrap;
+}
+.cloud-card.logged-in .cloud-actions button{
+  padding:7px 9px;
+  font-size:11px;
+  white-space:nowrap;
+}
+.cloud-card.logged-in .cloud-status{
+  margin:5px 0 0;
+  padding:3px 7px;
+  font-size:9px;
+  background:transparent;
+}
+@media(max-width:620px){
+  .cloud-card.logged-in #authLoggedIn{
+    display:grid!important;
+    grid-template-columns:1fr;
+  }
+  .cloud-card.logged-in .cloud-actions{
+    display:grid;
+    grid-template-columns:1fr 1fr auto;
+    gap:5px;
+  }
+  .cloud-card.logged-in .cloud-actions button{
+    padding:7px 6px;
+    font-size:10px;
+  }
+}

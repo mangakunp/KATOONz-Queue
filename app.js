@@ -25,23 +25,112 @@ let state;
 try{state=JSON.parse(localStorage.getItem(KEY))||defaultState()}catch{state=defaultState()}
 normalizeState();
 
+function toArray(value){
+  if(Array.isArray(value))return value.filter(v=>v!=null);
+  if(value==null)return [];
+  if(typeof value==="object"){
+    return Object.keys(value)
+      .sort((a,b)=>{
+        const an=Number(a),bn=Number(b);
+        if(Number.isFinite(an)&&Number.isFinite(bn))return an-bn;
+        return String(a).localeCompare(String(b));
+      })
+      .map(k=>value[k])
+      .filter(v=>v!=null);
+  }
+  return [];
+}
+
 function normalizeState(){
-  if(!Array.isArray(state.members))state.members=[];
-  if(!Array.isArray(state.today))state.today=[];
-  if(!Array.isArray(state.courts))state.courts=[];
-  if(!Array.isArray(state.history))state.history=[];
+  if(!state || typeof state!=="object")state=defaultState();
+
+  state.members=toArray(state.members);
+  state.today=toArray(state.today);
+  state.courts=toArray(state.courts);
+  state.history=toArray(state.history);
+
   if(!state.archive || typeof state.archive!=="object")state.archive={};
-  if(!state.costs)state.costs={courtRate:120,courtCount:state.courts.length||0,hours:2,shuttleRate:45,other:0,qrData:""};
-  if(!Number.isFinite(+state.costs.courtCount))state.costs.courtCount=state.courts.length||0;
+  if(!state.costs || typeof state.costs!=="object"){
+    state.costs={courtRate:120,courtCount:state.courts.length||2,hours:2,shuttleRate:45,other:0,qrData:""};
+  }
+
+  if(!Number.isFinite(+state.costs.courtCount))state.costs.courtCount=state.courts.length||2;
+  if(!Number.isFinite(+state.costs.courtRate))state.costs.courtRate=120;
+  if(!Number.isFinite(+state.costs.hours))state.costs.hours=2;
+  if(!Number.isFinite(+state.costs.shuttleRate))state.costs.shuttleRate=45;
+  if(!Number.isFinite(+state.costs.other))state.costs.other=0;
   if(typeof state.costs.qrData!=="string")state.costs.qrData="";
-  state.courts.forEach(c=>{if(!c.state)c.state=c.slots?.some(Boolean)?"called":"idle"});
+
+  // Firebase อาจตัด slots ที่เป็น null ทิ้งทั้งหมด
+  // จึงสร้าง 4 ช่องกลับมา และรองรับ sentinel 0 จาก v5.5.2+
+  state.courts=state.courts.map((c,index)=>{
+    c=(c && typeof c==="object")?c:{};
+    let slots=toArray(c.slots);
+
+    // กรณี slots เป็น object ที่มี key 0..3 และบางช่องหาย:
+    // reconstruct จาก source โดยรักษาตำแหน่งให้มากที่สุด
+    if(c.slots && !Array.isArray(c.slots) && typeof c.slots==="object"){
+      slots=[0,1,2,3].map(i=>c.slots[i] ?? c.slots[String(i)] ?? null);
+    }
+
+    slots=slots.concat([null,null,null,null]).slice(0,4).map(v=>{
+      if(v===0 || v==="0" || v===false || v==="")return null;
+      const n=Number(v);
+      return Number.isFinite(n) && n>0 ? n : null;
+    });
+
+    return {
+      ...c,
+      id:Number(c.id)||index+1,
+      name:String(c.name ?? (index+1)),
+      slots,
+      state:["idle","called","playing"].includes(c.state)
+        ? c.state
+        : (slots.some(Boolean)?"called":"idle")
+    };
+  });
+
+  // ถ้าข้อมูลเก่ามากและสนามหายทั้งหมด ให้คืนสนามเริ่มต้น 2 สนาม
+  if(state.courts.length===0){
+    state.courts=[
+      {id:1,name:"1",slots:[null,null,null,null],state:"idle"},
+      {id:2,name:"2",slots:[null,null,null,null],state:"idle"}
+    ];
+  }
+
   if(!Number.isFinite(+state.queueCounter))state.queueCounter=0;
-  state.today.forEach((p,i)=>{
+  if(!Number.isFinite(+state.shuttleCount))state.shuttleCount=0;
+  if(!state.sessionDate)state.sessionDate=new Date().toISOString().slice(0,10);
+
+  state.today=state.today.map((p,i)=>{
+    p=(p && typeof p==="object")?p:{};
     if(!Number.isFinite(+p.queuePos)){state.queueCounter++;p.queuePos=state.queueCounter}
     if(!p.joinedAt)p.joinedAt=Date.now();
     if(!p.waitStart)p.waitStart=p.joinedAt;
-    if(!p.status)p.status="waiting";
+    if(!["waiting","called","playing","paused"].includes(p.status))p.status="waiting";
     if(!Number.isFinite(+p.games))p.games=0;
+    p.memberId=Number(p.memberId)||0;
+    return p;
+  }).filter(p=>p.memberId>0);
+
+  state.members=state.members.map((m,i)=>({
+    ...m,
+    id:Number(m?.id)||i+1,
+    name:String(m?.name||("ผู้เล่น "+(i+1))),
+    lv:[1,2,3].includes(Number(m?.lv))?Number(m.lv):2
+  }));
+
+  // ถ้าสถานะ today ไม่ตรงกับสนามหลัง migration ให้ sync จากสนาม
+  const courtIds=new Set(state.courts.flatMap(c=>c.slots.filter(Boolean)));
+  state.today.forEach(p=>{
+    if(courtIds.has(p.memberId)){
+      const court=state.courts.find(c=>c.slots.includes(p.memberId));
+      p.status=court?.state==="playing"?"playing":"called";
+    }else if(p.status==="called" || p.status==="playing"){
+      p.status="waiting";
+      p.waitStart=Date.now();
+      p.queuePos=nextQueue();
+    }
   });
 }
 

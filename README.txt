@@ -1,3 +1,35 @@
+KATOONz x TOMO Queue Manager v5.5.3 — Compact Login
+
+ใหม่:
+- ก่อน Login: แสดงกล่อง User Cloud Sync เต็มตามเดิม
+- หลัง Login: ซ่อนหัวข้อ คำอธิบาย ช่อง Email/Password และข้อความส่วนเกิน
+- เหลือแถบ Cloud ขนาดเล็ก แสดงบัญชี + Save Cloud + Load Cloud + Logout
+- เหมาะกับ Smartphone/iPad และเหลือพื้นที่สำหรับจัดคิวมากขึ้น
+- ระบบ Cloud Migration Fix จาก v5.5.2 ยังอยู่ครบ
+
+อัป GitHub ทับไฟล์เดิมได้เลย แล้ว Hard Refresh หนึ่งครั้ง
+
+KATOONz x TOMO Queue Manager v5.5.2 — Cloud Migration Fix
+
+แก้ปัญหา:
+- โหลดข้อมูล Cloud เก่าแล้วกด “เพิ่มสนาม” ไม่ทำงาน
+- Firebase ตัด slots ที่เป็น null ออก
+- โหลดข้อมูลเก่าที่ courts/members/today/history กลับมาเป็น object
+- ซ่อมสนามที่ไม่มี slots ให้กลับเป็น 4 ช่องอัตโนมัติ
+- ถ้าข้อมูลเก่าทำให้สนามหายทั้งหมด จะสร้างสนาม 1 และ 2 ให้ใหม่
+- Save Cloud รุ่นใหม่เก็บช่องว่างสนามเป็น sentinel 0 แทน null
+- Load Cloud แปลง 0 กลับเป็นช่องว่างในแอป
+- ไม่ต้องลบข้อมูล Cloud เดิม
+
+วิธีอัปเดต:
+1. อัปโหลดไฟล์ v5.5.2 ทั้งหมดทับ GitHub
+2. Commit changes
+3. Hard Refresh / เปิดแอปใหม่
+4. Login
+5. กด “โหลดจาก Cloud” ได้เลย
+6. ตรวจว่าสนามกลับมาและปุ่ม “เพิ่มสนาม” ใช้ได้
+7. เมื่อข้อมูลถูกต้อง ให้กด “บันทึกขึ้น Cloud” อีกครั้ง เพื่ออัปเกรดข้อมูล Cloud เป็นรูปแบบ v5.5.2
+
 KATOONz x TOMO Queue Manager v5.5.1 — Login Fix
 
 แก้ไข:
