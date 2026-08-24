@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>KATOONz x TOMO Queue Manager v5.5.3</title>
+  <title>KATOONz x TOMO Queue Manager v5.6</title>
 </head>
 <body>
 <div class="app-shell">
@@ -62,31 +62,7 @@
     <main>
       <!-- PAGE 1 -->
       <section id="playersPage" class="page active">
-        <section class="card cloud-card">
-  <div class="section-head"><div>
-    <h2>☁️ User Cloud Sync</h2>
-    <p>ไม่ล็อกอินก็ใช้ Offline ได้ · เมื่อล็อกอินข้อมูล Cloud จะแยกตามบัญชี ไม่ทับกับเพื่อน</p>
-  </div></div>
-  <div id="authLoggedOut" class="cloud-auth">
-    <input id="authEmail" type="email" placeholder="อีเมล">
-    <input id="authPassword" type="password" placeholder="รหัสผ่านอย่างน้อย 6 ตัว">
-    <div class="cloud-actions">
-      <button id="loginBtn" class="primary">เข้าสู่ระบบ</button>
-      <button id="signupBtn" class="soft-btn">สมัคร User</button>
-      <button id="resetPasswordBtn" class="ghost-btn">ลืมรหัสผ่าน</button>
-    </div>
-  </div>
-  <div id="authLoggedIn" class="hidden">
-    <div class="cloud-user">👤 <b id="cloudUserEmail"></b></div>
-    <div class="cloud-actions">
-      <button id="saveCloudBtn" class="primary">☁️ บันทึกขึ้น Cloud</button>
-      <button id="loadCloudBtn" class="soft-btn">⬇️ โหลดจาก Cloud</button>
-      <button id="logoutBtn" class="ghost-btn">ออกจากระบบ</button>
-    </div>
-  </div>
-  <div id="cloudStatus" class="cloud-status">กำลังตรวจสอบ…</div>
-  <div class="cloud-note">QR รับเงินจะเก็บเฉพาะในอุปกรณ์ · v5.5.2 รองรับ Cloud เก่าและซ่อมข้อมูลสนามอัตโนมัติ</div>
-</section>
+        
         <div class="summary-grid three">
           <div class="summary-card mint"><span>สมาชิกทั้งหมด</span><strong id="allPlayerCount">0</strong><small>คน</small></div>
           <div class="summary-card lavender"><span>มาเล่นวันนี้</span><strong id="todayPlayerCountHome">0</strong><small>คน</small></div>
@@ -138,7 +114,7 @@
             <div class="queue-note">
       🤖 Smart Rotation แบบ Offline — เลือก 4 คนที่รอนานที่สุดก่อนเสมอ
       จากนั้นค่อยจัดคู่โดยลด “คู่เดิม” และ “คนที่เพิ่งเจอกัน” โดยไม่ใช้ Level
-    </div>
+    </div><div class="lookahead-panel"><div class="lookahead-head"><div><b>🔮 คิวล่วงหน้า</b><small>เตรียม 5 กลุ่มถัดไป ลดคนเดิมลงติดและลดกลุ่มซ้ำ</small></div><button id="rebuildPlanBtn" class="soft-btn">จัดคิวใหม่</button></div><div id="lookaheadList" class="lookahead-list"></div></div>
             <div id="todayQueue" class="queue-list"></div>
           </section>
 
@@ -345,11 +321,7 @@
 
 <script src="app.js"></script>
 
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.14.1/firebase-database-compat.js"></script>
-<script src="./firebase-config.js"></script>
-<script src="./firebase-sync.js"></script>
+
 
 </body>
 </html>

@@ -17,6 +17,7 @@ function defaultState(){
     queueCounter:0,
     history:[],
     archive:{},
+    plan:{items:[]},
     costs:{courtRate:120,courtCount:2,hours:2,shuttleRate:45,other:0,qrData:""},
     sessionDate:new Date().toISOString().slice(0,10)
   };
@@ -50,6 +51,8 @@ function normalizeState(){
   state.history=toArray(state.history);
 
   if(!state.archive || typeof state.archive!=="object")state.archive={};
+  if(!state.plan||typeof state.plan!=="object")state.plan={items:[]};
+  if(!Array.isArray(state.plan.items))state.plan.items=[];
   if(!state.costs || typeof state.costs!=="object"){
     state.costs={courtRate:120,courtCount:state.courts.length||2,hours:2,shuttleRate:45,other:0,qrData:""};
   }
@@ -170,6 +173,8 @@ function archiveSnapshot(){
 }
 function syncArchive(){
   if(!state.archive || typeof state.archive!=="object")state.archive={};
+  if(!state.plan||typeof state.plan!=="object")state.plan={items:[]};
+  if(!Array.isArray(state.plan.items))state.plan.items=[];
   const snap=archiveSnapshot();
   // เก็บแม้ยังไม่มีเกม หากมีผู้เล่นวันนี้ เพื่อไม่ให้ข้อมูลวันนั้นหาย
   if(snap.playerCount>0 || snap.totalGames>0 || snap.shuttleCount>0){
@@ -268,13 +273,13 @@ function addToday(memberId){
   if(todayPlayer(memberId))return;
   const now=Date.now();
   state.today.push({memberId,joinedAt:now,waitStart:now,status:"waiting",games:0,queuePos:nextQueue()});
-  save();render();
+  state.plan.items=[];save();render();
 }
 function removeToday(memberId){
   const p=todayPlayer(memberId);
   if(!p)return;
   if(state.courts.some(c=>c.slots.includes(memberId)))return alert("ผู้เล่นกำลังอยู่ในสนาม กรุณาจบเกมหรือเปลี่ยนตัวก่อน");
-  if(confirm("นำผู้เล่นออกจากวันนี้?")){state.today=state.today.filter(x=>x.memberId!==memberId);save();render()}
+  if(confirm("นำผู้เล่นออกจากวันนี้?")){state.today=state.today.filter(x=>x.memberId!==memberId);state.plan.items=[];save();render()}
 }
 function togglePause(memberId){
   const p=todayPlayer(memberId);if(!p)return;
@@ -314,12 +319,70 @@ function deleteCourt(id){
   state.courts.splice(idx,1);save();render();
 }
 function renameCourt(id,val){const c=state.courts.find(c=>c.id===id);if(c){c.name=val.trim()||String(id);save()}}
-function chooseNextFour(){
-  // Fairness rule: คนรอนานที่สุด 4 คนก่อนเสมอ
-  // ไม่สน Level และไม่พยายามชดเชยจำนวนเกมของคนมาช้า
-  const q=waitingQueue();
-  return q.length>=4?q.slice(0,4):null;
+
+function groupKey(ids){return ids.slice().sort((a,b)=>a-b).join("-")}
+function recentMeetPenalty(ids){
+  let score=0;
+  const recent=state.history.slice(0,10);
+  for(let x=0;x<ids.length;x++)for(let y=x+1;y<ids.length;y++){
+    const k=pairKey(ids[x],ids[y]);
+    recent.forEach((h,i)=>{
+      const s=h.slots||[];
+      for(let a=0;a<s.length;a++)for(let b=a+1;b<s.length;b++){
+        if(pairKey(s[a],s[b])===k)score+=10-i;
+      }
+    });
+  }
+  return score;
 }
+function groupRepeat(ids){
+  const k=groupKey(ids);
+  return state.history.reduce((n,h)=>{
+    const s=(h.slots||[]).filter(Boolean);
+    return n+(s.length===4&&groupKey(s)===k?1:0)
+  },0);
+}
+function generatePlan(){
+  const base=waitingQueue().map(p=>({...p}));
+  const plans=[], virtual=[...base];
+  for(let round=0;round<5 && virtual.length>=4;round++){
+    const pool=virtual.slice(0,Math.min(9,virtual.length));
+    let best=null,bestScore=1e9;
+    for(let a=0;a<pool.length;a++)for(let b=a+1;b<pool.length;b++)for(let c=b+1;c<pool.length;c++)for(let d=c+1;d<pool.length;d++){
+      const four=[pool[a],pool[b],pool[c],pool[d]], ids=four.map(x=>x.memberId);
+      const waitPenalty=(a+b+c+d)*15;
+      const score=waitPenalty+groupRepeat(ids)*100+recentMeetPenalty(ids)*4;
+      if(score<bestScore){bestScore=score;best=four}
+    }
+    if(!best)break;
+    const ids=best.map(x=>x.memberId);
+    plans.push({ids,paired:pairFour(best)});
+    const used=new Set(ids);
+    const remain=virtual.filter(p=>!used.has(p.memberId));
+    best.forEach(p=>remain.push({...p,queuePos:(remain.at(-1)?.queuePos||0)+1}));
+    virtual.splice(0,virtual.length,...remain);
+  }
+  state.plan.items=plans; save(); return plans;
+}
+function nextPlanned(){
+  if(!state.plan.items.length)generatePlan();
+  while(state.plan.items.length){
+    const item=state.plan.items.shift();
+    const ok=item.ids.every(id=>todayPlayer(id)?.status==="waiting");
+    if(ok)return item.ids.map(id=>todayPlayer(id));
+  }
+  return null;
+}
+function renderLookahead(){
+  const box=$("#lookaheadList"); if(!box)return;
+  if(!state.plan.items.length)generatePlan();
+  box.innerHTML=state.plan.items.length?state.plan.items.slice(0,5).map((it,i)=>{
+    const names=it.ids.map(id=>member(id)?.name||("ID "+id));
+    return `<div class="lookahead-item"><div class="lookahead-no">${i+1}</div><div class="lookahead-names">${names.map(esc).join(" · ")}</div><div class="lookahead-status">ถัดไป</div></div>`;
+  }).join(""):'<div class="empty-state">ยังวางคิวล่วงหน้าไม่ได้</div>';
+}
+
+function chooseNextFour(){const p=nextPlanned();if(p&&p.length===4)return p;const q=waitingQueue();return q.length>=4?q.slice(0,4):null;}
 function pairKey(a,b){
   return [a,b].sort((x,y)=>x-y).join("-");
 }
@@ -462,6 +525,7 @@ function endCourt(id){
   c.slots=[null,null,null,null];
   c.state="idle";
   c.startedAt=null;
+  state.plan.items=[];
   save();render();
 }
 let replaceTarget=null;
@@ -597,7 +661,7 @@ $("#newDayBtn").onclick=()=>{
   if(!confirm("เริ่มวันใหม่? จะล้างผู้เล่นวันนี้ คิว สนามที่กำลังเล่น จำนวนลูก และประวัติวันนี้ แต่เก็บรายชื่อสมาชิกไว้"))return;
   state.today=[];
   state.courts=[{id:1,name:"1",slots:[null,null,null,null],state:"idle"},{id:2,name:"2",slots:[null,null,null,null],state:"idle"}];
-  state.shuttleCount=0;state.queueCounter=0;state.history=[];state.sessionDate=new Date().toISOString().slice(0,10);
+  state.shuttleCount=0;state.queueCounter=0;state.history=[];state.plan={items:[]};state.sessionDate=new Date().toISOString().slice(0,10);
   save();render();
 };
 $("#backupBtn").onclick=()=>{
@@ -814,8 +878,9 @@ function renderStats(){
   $("#shuttleSummary").textContent=state.shuttleCount;
   $("#shuttleCount").textContent=state.shuttleCount;
 }
+$("#rebuildPlanBtn")?.addEventListener("click",()=>{state.plan.items=[];generatePlan();render()});
 function render(){
-  renderMembers();renderQueue();renderCourts();renderCosts();renderStats();renderHistoryArchive();
+  renderMembers();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();
 }
 render();
 setInterval(()=>{renderQueue()},60000);

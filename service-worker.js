@@ -1,9 +1,9 @@
-const CACHE="katoonz-tomo-v5-5-3-compactlogin";
+const CACHE="katoonz-tomo-v5-6-offline-lookahead";
 const ASSETS=[
   "./",
   "./index.html",
   "./style.css",
-  "./app.js","./firebase-config.js","./firebase-sync.js",
+  "./app.js",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png"
