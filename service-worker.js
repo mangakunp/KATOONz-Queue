@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-9-6-stable-responsive";
+const CACHE="katoonz-tomo-v5-9-7-readable-rows-font";
 const ASSETS=[
   "./",
   "./index.html",

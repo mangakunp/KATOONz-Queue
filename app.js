@@ -20,7 +20,8 @@ function defaultState(){
     plan:{items:[]},
     pairingRules:{enabled:false,items:[]},
     costs:{courtRate:120,courtCount:2,hours:2,shuttleRate:45,other:0,qrData:""},
-    sessionDate:new Date().toISOString().slice(0,10)
+    sessionDate:new Date().toISOString().slice(0,10),
+    ui:{fontSize:"md"}
   };
 }
 let state;
@@ -61,6 +62,8 @@ function normalizeState(){
   if(!state.costs || typeof state.costs!=="object"){
     state.costs={courtRate:120,courtCount:state.courts.length||2,hours:2,shuttleRate:45,other:0,qrData:""};
   }
+  if(!state.ui || typeof state.ui!=="object")state.ui={fontSize:"md"};
+  if(!["sm","md","lg"].includes(state.ui.fontSize))state.ui.fontSize="md";
 
   if(!Number.isFinite(+state.costs.courtCount))state.costs.courtCount=state.courts.length||2;
   if(!Number.isFinite(+state.costs.courtRate))state.costs.courtRate=120;
@@ -894,9 +897,9 @@ function renderMembers(){
     const t=todayPlayer(m.id);
     return `<div class="member-row">
       <div class="member-no">${i+1}</div>
-      <div><div class="member-level-dot-wrap"><span class="level-dot lv${m.lv}"></span><div class="member-name">${esc(m.name)}</div></div><small class="status-today">${t?"● อยู่ในวันนี้แล้ว":""}</small></div>
-      <div><span class="lv-badge lv${m.lv}">Lv.${m.lv}</span></div>
-      <div>${t?'<span class="status-chip status-wait">วันนี้</span>':'<span class="muted">—</span>'}</div>
+      <div class="member-main"><div class="member-level-dot-wrap"><span class="level-dot lv${m.lv}"></span><div class="member-name">${esc(m.name)}</div></div><small class="status-today">${t?"● อยู่ในวันนี้แล้ว":""}</small></div>
+      <div class="member-level"><span class="lv-badge lv${m.lv}">Lv.${m.lv}</span></div>
+      <div class="member-presence">${t?'<span class="status-chip status-wait">วันนี้</span>':'<span class="muted">—</span>'}</div>
       <div class="member-actions">
         ${t?`<button class="mini-btn remove-today" data-id="${m.id}">นำออกวันนี้</button>`:`<button class="primary add-today" data-id="${m.id}">เพิ่มวันนี้</button>`}
         <button class="mini-btn edit-member" data-id="${m.id}">แก้ชื่อ</button>
@@ -1154,6 +1157,7 @@ function render(){
 }
 
 localStorage.removeItem("katoonz_display_mode");
+applyFontSize((state.ui&&state.ui.fontSize)||"md");
 render();
 setInterval(()=>{renderQueue()},60000);
 showPage(localStorage.getItem("katoonz_v5_page")||"playersPage");

@@ -1038,3 +1038,69 @@ body:not(.mode-tablet) .ipad-rules-card{display:none!important}
 .game-live-time{
   font-variant-numeric:tabular-nums;
 }
+
+
+/* ===== v5.9.7 Readable rows + font controls ===== */
+.member-row{
+  grid-template-columns:44px minmax(180px,1fr) 72px 68px auto!important;
+}
+.member-no{
+  background:linear-gradient(135deg,#4c2c76,#8e5cff)!important;
+  color:#ffffff!important;
+  border:1px solid #a987ff;
+  box-shadow:0 0 0 2px rgba(155,92,255,.12);
+}
+.member-main{min-width:0}
+.member-level,.member-presence{display:flex;align-items:center;justify-content:center}
+.member-actions{
+  flex-wrap:nowrap!important;
+  white-space:nowrap;
+  justify-content:flex-end;
+}
+.member-actions button{flex:0 0 auto}
+.font-size-tools{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  margin-left:auto;
+}
+.font-label{
+  font-size:11px;
+  color:var(--muted);
+  font-weight:700;
+}
+.font-btn{
+  border:1px solid var(--line);
+  background:#181e2a;
+  color:#efe9ff;
+  border-radius:10px;
+  padding:7px 10px;
+  min-width:42px;
+  font-weight:800;
+}
+.font-btn.active{
+  background:linear-gradient(135deg,#9b5cff,#753cf0)!important;
+  color:#fff!important;
+  border-color:#9b5cff;
+}
+body.font-sm .topbar h1{font-size:18px!important}
+body.font-sm .card, body.font-sm .court-card, body.font-sm .member-row, body.font-sm .queue-row{font-size:13px!important}
+body.font-sm .member-name{font-size:14px!important}
+body.font-sm .member-actions button, body.font-sm .nav-btn b, body.font-sm .nav-btn small, body.font-sm .queue-note, body.font-sm .status-chip, body.font-sm input, body.font-sm select, body.font-sm .court-slot b, body.font-sm .court-slot small{font-size:11px!important}
+
+body.font-md .topbar h1{font-size:21px!important}
+
+body.font-lg .topbar h1{font-size:24px!important}
+body.font-lg .card, body.font-lg .court-card, body.font-lg .member-row, body.font-lg .queue-row{font-size:16px!important}
+body.font-lg .member-name{font-size:18px!important}
+body.font-lg .member-actions button, body.font-lg .nav-btn b, body.font-lg .queue-note, body.font-lg .status-chip, body.font-lg input, body.font-lg select, body.font-lg .court-slot b{font-size:14px!important}
+body.font-lg .nav-btn small, body.font-lg .court-slot small, body.font-lg .status-today, body.font-lg .muted{font-size:12px!important}
+
+@media(max-width:900px){
+  .font-size-tools{gap:4px}
+  .font-label{display:none}
+}
+@media(max-width:760px){
+  .member-row{grid-template-columns:34px 1fr 58px 74px!important}
+  .member-actions{grid-column:2/-1;justify-content:flex-start;flex-wrap:wrap!important}
+}
