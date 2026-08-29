@@ -1,18 +1,21 @@
-KATOONz x TOMO Queue Manager v5.8.1 — Display Mode OFFLINE
+KATOONz x TOMO Queue Manager v5.9.1 — iPad Dashboard
 
-เพิ่มระบบเลือกรูปแบบหน้าจอ:
-- Auto: ให้ระบบปรับตามขนาดหน้าจอ
-- Smartphone: UI กระชับ, สนาม 1 คอลัมน์, เมนูซ่อนและเรียกด้วยปุ่ม
-- Tablet / iPad: Sidebar คงที่, สนาม 2 คอลัมน์, แสดงข้อมูลมากขึ้น
+เมื่อเลือก Display Mode = Tablet / iPad:
+- เปิด Dashboard แบบเต็มจอทันที
+- ซ้าย: รายชื่อผู้เล่น + เพิ่ม/นำออกวันนี้
+- กลาง: สนามที่กำลังเล่น + Timer นาที:วินาที
+- ขวา: คิวล่วงหน้า + ETA + สรุปเวลาเกม
+- ล่าง: Custom Pairing Rules
+- ไม่ต้องสลับหน้าไปมาเหมือน Smartphone
 
-ระบบจะจำโหมดที่เลือกไว้ใน Local Storage
-ครั้งต่อไปเปิดแอปจะใช้โหมดเดิมอัตโนมัติ
+Smartphone:
+- ยังใช้โหมดหน้าแบบกระชับเหมือนเดิม
 
-ระบบเดิมยังอยู่ครบ:
+ระบบเดิมอยู่ครบ:
+- Neon Purple UI
+- Round-Robin Mixer
+- Custom Pairing Rules
 - Game Time Tracking
 - ETA
-- Round-Robin Mixer
-- Dark Purple Theme
-- Offline-first
-- Backup / Restore JSON
-- ค่าใช้จ่าย / QR
+- Offline / Local Storage
+- Backup / Restore

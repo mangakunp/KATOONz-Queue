@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-8-1-displaymode";
+const CACHE="katoonz-tomo-v5-9-1-ipad-dashboard";
 const ASSETS=[
   "./",
   "./index.html",

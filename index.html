@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>KATOONz x TOMO Queue Manager v5.8.1</title>
+  <title>KATOONz x TOMO Queue Manager v5.9.1</title>
 </head>
 <body>
 <div class="app-shell">
@@ -70,6 +70,64 @@
     </header>
 
     <main>
+
+      <section id="ipadDashboard" class="ipad-dashboard">
+        <div class="ipad-col ipad-col-left">
+          <section class="card ipad-members-card">
+            <div class="section-head">
+              <div><h2>👥 รายชื่อผู้เล่น</h2><p>เลือก/นำออกวันนี้ และจัดการสมาชิก</p></div>
+              <button id="ipadAddMemberBtn" class="primary">＋ เพิ่มผู้เล่น</button>
+            </div>
+            <div class="ipad-search-row">
+              <input id="ipadPlayerSearch" placeholder="🔎 ค้นหาผู้เล่น...">
+            </div>
+            <div id="ipadMemberList" class="ipad-member-list"></div>
+          </section>
+        </div>
+
+        <div class="ipad-col ipad-col-center">
+          <section class="card ipad-courts-card">
+            <div class="section-head">
+              <div><h2>🏟️ สนามที่กำลังเล่น</h2><p>เรียก → เล่น → จบเกม พร้อมจับเวลาจริง</p></div>
+              <button id="ipadAddCourtBtn" class="primary">＋ เพิ่มสนาม</button>
+            </div>
+            <div id="ipadCourtList" class="court-grid ipad-court-grid"></div>
+          </section>
+
+          <section class="card ipad-today-card">
+            <div class="section-head">
+              <div><h2>🎮 การเล่นวันนี้</h2><p>สรุปแบบย่อสำหรับ iPad</p></div>
+            </div>
+            <div id="ipadTodaySummary" class="ipad-today-summary"></div>
+          </section>
+        </div>
+
+        <div class="ipad-col ipad-col-right">
+          <section class="card ipad-queue-card">
+            <div class="section-head">
+              <div><h2>⏱️ คิวต่อไป (ETA)</h2><p>คิวล่วงหน้าและเวลาประมาณก่อนลงสนาม</p></div>
+              <button id="ipadRebuildPlanBtn" class="soft-btn">จัดคิวใหม่</button>
+            </div>
+            <div id="ipadQueueList" class="ipad-queue-list"></div>
+          </section>
+
+          <section class="card ipad-time-card">
+            <div class="section-head">
+              <div><h2>📊 สรุปเวลาเกมวันนี้</h2></div>
+            </div>
+            <div id="ipadTimingSummary" class="timing-summary"></div>
+          </section>
+        </div>
+
+        <section class="card ipad-rules-card">
+          <div class="section-head">
+            <div><h2>🧩 Custom Pairing Rules</h2><p>กฎจับคู่เฉพาะสำหรับวันนี้</p></div>
+            <label class="switch-row"><input id="ipadRulesEnabled" type="checkbox"><span>เปิดใช้กฎ</span></label>
+          </div>
+          <div id="ipadRulesList" class="rules-list"></div>
+        </section>
+      </section>
+
       <!-- PAGE 1 -->
       <section id="playersPage" class="page active">
         
@@ -103,6 +161,42 @@
       </section>
 
       <!-- PAGE 2 -->
+      
+        <section class="card rules-card">
+          <div class="section-head">
+            <div>
+              <h2>🧩 Custom Pairing Rules</h2>
+              <p>ตั้งเงื่อนไขพิเศษของลูกก๊วนก่อนเพิ่มมาเล่นวันนี้ · ไม่ใช้ Level ในการจัดคิว</p>
+            </div>
+            <label class="switch-row">
+              <input id="pairRulesEnabled" type="checkbox">
+              <span>เปิดใช้กฎ</span>
+            </label>
+          </div>
+
+          <div class="rules-toolbar">
+            <select id="ruleType">
+              <option value="prefer_partner">💜 อยากเป็นคู่กัน</option>
+              <option value="always_partner">🔒 อยากคู่กันตลอดถ้าอยู่กลุ่มเดียวกัน</option>
+              <option value="avoid_partner">🚫 ไม่อยากเป็นคู่กัน</option>
+              <option value="avoid_game">⛔ ไม่อยากอยู่เกมเดียวกัน</option>
+              <option value="prefer_game">✨ อยากอยู่เกมเดียวกัน</option>
+            </select>
+            <select id="rulePlayerA"></select>
+            <span class="rule-arrow">↔</span>
+            <select id="rulePlayerB"></select>
+            <select id="ruleStrength">
+              <option value="soft">Soft</option>
+              <option value="strong" selected>Strong</option>
+              <option value="absolute">Absolute</option>
+            </select>
+            <button id="addRuleBtn" class="primary">＋ เพิ่มกฎ</button>
+          </div>
+
+          <div id="rulesList" class="rules-list"></div>
+          <div id="ruleConflictBox" class="rule-conflict hidden"></div>
+        </section>
+
       <section id="todayPage" class="page">
         <div class="summary-grid four">
           <div class="summary-card mint"><span>มาวันนี้</span><strong id="todayCount">0</strong><small>คน</small></div>

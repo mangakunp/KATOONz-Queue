@@ -18,6 +18,7 @@ function defaultState(){
     history:[],
     archive:{},
     plan:{items:[]},
+    pairingRules:{enabled:false,items:[]},
     costs:{courtRate:120,courtCount:2,hours:2,shuttleRate:45,other:0,qrData:""},
     sessionDate:new Date().toISOString().slice(0,10)
   };
@@ -53,6 +54,8 @@ function normalizeState(){
   if(!state.archive || typeof state.archive!=="object")state.archive={};
   if(!state.plan||typeof state.plan!=="object")state.plan={items:[]};
   if(!Array.isArray(state.plan.items))state.plan.items=[];
+  if(!state.pairingRules||typeof state.pairingRules!=="object")state.pairingRules={enabled:false,items:[]};
+  if(!Array.isArray(state.pairingRules.items))state.pairingRules.items=[];
   if(!state.costs || typeof state.costs!=="object"){
     state.costs={courtRate:120,courtCount:state.courts.length||2,hours:2,shuttleRate:45,other:0,qrData:""};
   }
@@ -175,6 +178,8 @@ function syncArchive(){
   if(!state.archive || typeof state.archive!=="object")state.archive={};
   if(!state.plan||typeof state.plan!=="object")state.plan={items:[]};
   if(!Array.isArray(state.plan.items))state.plan.items=[];
+  if(!state.pairingRules||typeof state.pairingRules!=="object")state.pairingRules={enabled:false,items:[]};
+  if(!Array.isArray(state.pairingRules.items))state.pairingRules.items=[];
   const snap=archiveSnapshot();
   // เก็บแม้ยังไม่มีเกม หากมีผู้เล่นวันนี้ เพื่อไม่ให้ข้อมูลวันนั้นหาย
   if(snap.playerCount>0 || snap.totalGames>0 || snap.shuttleCount>0){
@@ -364,7 +369,9 @@ function rrBestPairing(ids, hist, virtualPartner, virtualOpponent){
     const s=
       ((hist.partner[p1]||0)+(hist.partner[p2]||0)+(virtualPartner[p1]||0)+(virtualPartner[p2]||0))*60 +
       opp.reduce((n,k)=>n+(hist.opponent[k]||0)+(virtualOpponent[k]||0),0)*12;
-    if(s<bestScore){bestScore=s;best=z}
+    const custom=rulePenaltyForPairing(z);
+    const total=s+custom;
+    if(total<bestScore){bestScore=total;best=z}
   });
   return best;
 }
@@ -388,6 +395,7 @@ function generatePlan(){
 
       let score=(a+b+c+d)*18;
       score+=((hist.group[groupKey(ids)]||0)+(vGroup[groupKey(ids)]||0))*180;
+      score+=rulePenaltyForGroup(ids);
       score+=ids.reduce((n,id)=>n+(vUse[id]||0),0)*35;
 
       for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
@@ -740,6 +748,117 @@ $("#restoreFile").onchange=e=>{
 $("#playerSearch").oninput=renderMembers;
 $("#levelFilter").onchange=renderMembers;
 
+
+function ruleLabel(type){
+  return {
+    prefer_partner:"💜 อยากเป็นคู่กัน",
+    always_partner:"🔒 คู่กันตลอดถ้าอยู่กลุ่มเดียวกัน",
+    avoid_partner:"🚫 ไม่อยากเป็นคู่กัน",
+    avoid_game:"⛔ ไม่อยากอยู่เกมเดียวกัน",
+    prefer_game:"✨ อยากอยู่เกมเดียวกัน"
+  }[type]||type;
+}
+function ruleWeight(strength){
+  return strength==="absolute"?10000:strength==="strong"?500:100;
+}
+function samePair(a,b,x,y){
+  return (a===x&&b===y)||(a===y&&b===x);
+}
+function rulePenaltyForGroup(ids){
+  if(!state.pairingRules?.enabled)return 0;
+  let score=0;
+  const set=new Set(ids);
+  (state.pairingRules.items||[]).forEach(r=>{
+    const both=set.has(r.a)&&set.has(r.b);
+    const w=ruleWeight(r.strength);
+    if(r.type==="avoid_game" && both)score+=w;
+    if(r.type==="prefer_game" && !both && (set.has(r.a)||set.has(r.b)))score+=w*.35;
+  });
+  return score;
+}
+function rulePenaltyForPairing(z){
+  if(!state.pairingRules?.enabled)return 0;
+  let score=0;
+  const teammatePairs=[[z[0],z[1]],[z[2],z[3]]];
+  const group=new Set(z);
+  (state.pairingRules.items||[]).forEach(r=>{
+    const together=teammatePairs.some(([a,b])=>samePair(a,b,r.a,r.b));
+    const both=group.has(r.a)&&group.has(r.b);
+    const w=ruleWeight(r.strength);
+    if(r.type==="prefer_partner" && both && !together)score+=w;
+    if(r.type==="always_partner" && both && !together)score+=w*2;
+    if(r.type==="avoid_partner" && together)score+=w*1.5;
+  });
+  return score;
+}
+function validateRules(){
+  const conflicts=[];
+  const items=state.pairingRules?.items||[];
+  items.forEach((a,i)=>{
+    items.slice(i+1).forEach(b=>{
+      if(!samePair(a.a,a.b,b.a,b.b))return;
+      const incompatible=
+        (a.type==="always_partner"&&["avoid_partner","avoid_game"].includes(b.type))||
+        (b.type==="always_partner"&&["avoid_partner","avoid_game"].includes(a.type))||
+        (a.type==="prefer_game"&&b.type==="avoid_game")||
+        (b.type==="prefer_game"&&a.type==="avoid_game");
+      if(incompatible){
+        conflicts.push(`${member(a.a)?.name||a.a} ↔ ${member(a.b)?.name||a.b}`);
+      }
+    });
+  });
+  return [...new Set(conflicts)];
+}
+function populateRulePlayers(){
+  const a=$("#rulePlayerA"),b=$("#rulePlayerB");
+  if(!a||!b)return;
+  const opts=state.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("");
+  a.innerHTML=opts;b.innerHTML=opts;
+  if(state.members.length>1)b.selectedIndex=1;
+}
+function addPairRule(){
+  const type=$("#ruleType").value;
+  const a=+$("#rulePlayerA").value,b=+$("#rulePlayerB").value;
+  const strength=$("#ruleStrength").value;
+  if(!a||!b||a===b)return alert("กรุณาเลือกผู้เล่นคนละคน");
+  const dup=state.pairingRules.items.some(r=>r.type===type&&samePair(r.a,r.b,a,b));
+  if(dup)return alert("มีกฎนี้อยู่แล้ว");
+  state.pairingRules.items.push({id:Date.now()+Math.random(),type,a,b,strength});
+  state.plan.items=[];
+  save();renderPairRules();renderLookahead();
+}
+function deletePairRule(id){
+  state.pairingRules.items=state.pairingRules.items.filter(r=>String(r.id)!==String(id));
+  state.plan.items=[];
+  save();renderPairRules();renderLookahead();
+}
+function renderPairRules(){
+  const enabled=$("#pairRulesEnabled");
+  if(!enabled)return;
+  enabled.checked=!!state.pairingRules.enabled;
+  populateRulePlayers();
+  const list=$("#rulesList");
+  const items=state.pairingRules.items||[];
+  list.innerHTML=items.length?items.map(r=>`
+    <div class="rule-item">
+      <div class="rule-type">${ruleLabel(r.type)}</div>
+      <div class="rule-person">${esc(member(r.a)?.name||("ID "+r.a))}</div>
+      <div class="rule-arrow">↔</div>
+      <div class="rule-person">${esc(member(r.b)?.name||("ID "+r.b))}</div>
+      <div class="rule-strength rule-${r.strength}">${r.strength}</div>
+      <button class="rule-delete" data-id="${r.id}">ลบ</button>
+    </div>
+  `).join(""):'<div class="rule-empty">ยังไม่มีกฎพิเศษ</div>';
+  $$(".rule-delete").forEach(b=>b.onclick=()=>deletePairRule(b.dataset.id));
+
+  const conflicts=validateRules();
+  const box=$("#ruleConflictBox");
+  if(conflicts.length){
+    box.classList.remove("hidden");
+    box.textContent="⚠️ กฎขัดกัน: "+conflicts.join(", ");
+  }else box.classList.add("hidden");
+}
+
 function renderMembers(){
   const q=$("#playerSearch").value.trim().toLowerCase(),lv=$("#levelFilter").value;
   const list=state.members.filter(m=>(!q||m.name.toLowerCase().includes(q))&&(lv==="all"||String(m.lv)===lv));
@@ -797,6 +916,7 @@ function renderCourts(){
       <button class="court-delete" data-id="${c.id}">×</button>
       <div class="court-title"><span>สนาม</span><input class="court-name-input" data-id="${c.id}" value="${esc(c.name)}">
         <span class="court-state-badge ${c.state==="idle"?"court-state-idle":c.state==="called"?"court-state-called":"court-state-playing"}">${c.state==="idle"?"ว่าง":c.state==="called"?"เรียกแล้ว":"กำลังเล่น"}</span>
+      ${c.state==="playing"&&c.startedAt?`<div class="game-live-time">⏱ ${fmtDuration(Date.now()-c.startedAt)}</div>`:""}
       </div>
       <div class="court-slots">
         ${c.slots.map((mid,idx)=>{
@@ -990,8 +1110,118 @@ function renderTimingSummary(){
   ].map(([a,b])=>`<div class="timing-stat"><small>${a}</small><strong>${b}</strong></div>`).join("");
 }
 
+
+$("#addRuleBtn")?.addEventListener("click",addPairRule);
+$("#pairRulesEnabled")?.addEventListener("change",e=>{
+  state.pairingRules.enabled=e.target.checked;
+  state.plan.items=[];
+  save();
+  renderPairRules();
+  renderLookahead();
+});
+
+
+function renderIpadDashboard(){
+  if(!document.querySelector("#ipadDashboard"))return;
+
+  // members
+  const q=(document.querySelector("#ipadPlayerSearch")?.value||"").trim().toLowerCase();
+  const members=state.members.filter(m=>!q||m.name.toLowerCase().includes(q));
+  const ml=$("#ipadMemberList");
+  ml.innerHTML=members.length?members.map((m,i)=>{
+    const t=todayPlayer(m.id);
+    return `<div class="ipad-member-row">
+      <div>${i+1}</div>
+      <div>
+        <div class="member-level-dot-wrap"><span class="level-dot lv${m.lv}"></span><span class="name">${esc(m.name)}</span></div>
+        <small>Lv.${m.lv}${t?" · วันนี้ "+formatTime(t.joinedAt):""}</small>
+      </div>
+      <div class="ipad-member-actions">
+        ${t?`<button class="mini-btn ipad-remove-today" data-id="${m.id}">นำออก</button>`:`<button class="primary ipad-add-today" data-id="${m.id}">เพิ่มวันนี้</button>`}
+      </div>
+    </div>`;
+  }).join(""):'<div class="empty-state">ไม่พบผู้เล่น</div>';
+
+  $$(".ipad-add-today").forEach(b=>b.onclick=()=>addToday(+b.dataset.id));
+  $$(".ipad-remove-today").forEach(b=>b.onclick=()=>removeToday(+b.dataset.id));
+
+  // courts - reuse renderer output
+  renderCourts();
+  const srcCourts=$("#courtList");
+  const dstCourts=$("#ipadCourtList");
+  if(srcCourts&&dstCourts){
+    dstCourts.innerHTML=srcCourts.innerHTML;
+    dstCourts.querySelectorAll(".court-delete").forEach(b=>b.onclick=()=>deleteCourt(+b.dataset.id));
+    dstCourts.querySelectorAll(".court-name-input").forEach(i=>i.onchange=()=>renameCourt(+i.dataset.id,i.value));
+    dstCourts.querySelectorAll(".call-btn").forEach(b=>b.onclick=()=>callCourt(+b.dataset.id));
+    dstCourts.querySelectorAll(".play-btn").forEach(b=>b.onclick=()=>playCourt(+b.dataset.id));
+    dstCourts.querySelectorAll(".end-btn").forEach(b=>b.onclick=()=>endCourt(+b.dataset.id));
+    dstCourts.querySelectorAll(".court-slot.filled").forEach(b=>b.onclick=()=>openReplace(+b.dataset.cid,+b.dataset.slot));
+  }
+
+  // queue / ETA
+  if(!state.plan.items.length)generatePlan();
+  const qbox=$("#ipadQueueList");
+  const plans=(state.plan.items||[]).slice(0,5);
+  qbox.innerHTML=plans.length?plans.map((it,i)=>{
+    const names=it.ids.map(id=>member(id)?.name||("ID "+id));
+    const eta=estimateQueueEta(i);
+    return `<div class="ipad-queue-item">
+      <div class="ipad-queue-no">#${i+1}</div>
+      <div class="ipad-queue-names">${names.map(esc).join(" · ")}</div>
+      <div class="ipad-eta">≈ ${Math.max(0,Math.round(eta/60000))} นาที</div>
+    </div>`;
+  }).join(""):'<div class="empty-state">ยังไม่มีคิว</div>';
+
+  // today mini summary
+  const playing=state.today.filter(p=>p.status==="playing").length;
+  const waiting=state.today.filter(p=>p.status==="waiting").length;
+  $("#ipadTodaySummary").innerHTML=[
+    ["วันนี้",state.today.length+" คน"],
+    ["เล่น",playing+" คน"],
+    ["รอ",waiting+" คน"],
+    ["ลูก",state.shuttleCount+" ลูก"]
+  ].map(([a,b])=>`<div class="ipad-mini-stat"><small>${a}</small><strong>${b}</strong></div>`).join("");
+
+  // timing summary
+  const d=completedDurations();
+  const avg=d.length?d.reduce((a,b)=>a+b,0)/d.length:0;
+  $("#ipadTimingSummary").innerHTML=[
+    ["เกม",d.length],
+    ["เฉลี่ย",d.length?fmtDuration(avg):"-"],
+    ["สั้นสุด",d.length?fmtDuration(Math.min(...d)):"-"],
+    ["นานสุด",d.length?fmtDuration(Math.max(...d)):"-"]
+  ].map(([a,b])=>`<div class="timing-stat"><small>${a}</small><strong>${b}</strong></div>`).join("");
+
+  // pairing rules summary
+  $("#ipadRulesEnabled").checked=!!state.pairingRules.enabled;
+  const rules=$("#ipadRulesList");
+  const items=state.pairingRules.items||[];
+  rules.innerHTML=items.length?items.map(r=>`
+    <div class="rule-item">
+      <div class="rule-type">${ruleLabel(r.type)}</div>
+      <div class="rule-person">${esc(member(r.a)?.name||"")}</div>
+      <div class="rule-arrow">↔</div>
+      <div class="rule-person">${esc(member(r.b)?.name||"")}</div>
+      <div class="rule-strength rule-${r.strength}">${r.strength}</div>
+      <button class="rule-delete ipad-rule-delete" data-id="${r.id}">ลบ</button>
+    </div>`).join(""):'<div class="rule-empty">ยังไม่มีกฎพิเศษ</div>';
+  $$(".ipad-rule-delete").forEach(b=>b.onclick=()=>deletePairRule(b.dataset.id));
+}
+
+
+$("#ipadAddMemberBtn")?.addEventListener("click",()=>openMemberModal());
+$("#ipadAddCourtBtn")?.addEventListener("click",addCourt);
+$("#ipadRebuildPlanBtn")?.addEventListener("click",()=>{state.plan.items=[];generatePlan();render();});
+$("#ipadPlayerSearch")?.addEventListener("input",renderIpadDashboard);
+$("#ipadRulesEnabled")?.addEventListener("change",e=>{
+  state.pairingRules.enabled=e.target.checked;
+  state.plan.items=[];
+  save();render();
+});
+
 function render(){
-  renderMembers();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();renderTimingSummary();
+  renderMembers();renderPairRules();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();renderTimingSummary();renderIpadDashboard();
 }
 
 function applyDisplayMode(mode){
@@ -1007,6 +1237,7 @@ function applyDisplayMode(mode){
   if(sel && sel.value!==mode)sel.value=mode;
 
   localStorage.setItem("katoonz_display_mode",mode);
+  setTimeout(()=>{try{renderIpadDashboard()}catch(e){}},0);
 }
 
 function initDisplayMode(){
@@ -1036,5 +1267,11 @@ setInterval(()=>{
   if(state.courts.some(c=>c.state==="playing")){
     renderCourts();
     renderQueue();
+  }
+},1000);
+
+setInterval(()=>{
+  if(document.body.classList.contains("mode-tablet") && state.courts.some(c=>c.state==="playing")){
+    try{renderIpadDashboard()}catch(e){}
   }
 },1000);
