@@ -207,6 +207,10 @@ function currentDateThai(){
 }
 
 function showPage(id){
+  const dash=document.querySelector("#ipadDashboard");
+  if(document.body.classList.contains("mode-tablet") && dash){
+    dash.classList.remove("temporarily-hidden");
+  }
   $$(".page").forEach(p=>p.classList.toggle("active",p.id===id));
   $$(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
   const titles={playersPage:"รายชื่อผู้เล่น (ทั้งหมด)",todayPage:"การเล่นวันนี้",costPage:"สรุปค่าใช้จ่ายวันนี้"};
@@ -1176,6 +1180,8 @@ function renderIpadDashboard(){
   // today mini summary
   const playing=state.today.filter(p=>p.status==="playing").length;
   const waiting=state.today.filter(p=>p.status==="waiting").length;
+  if($("#ipadSideShuttleCount"))$("#ipadSideShuttleCount").textContent=state.shuttleCount;
+
   $("#ipadTodaySummary").innerHTML=[
     ["วันนี้",state.today.length+" คน"],
     ["เล่น",playing+" คน"],
@@ -1218,6 +1224,32 @@ $("#ipadRulesEnabled")?.addEventListener("change",e=>{
   state.pairingRules.enabled=e.target.checked;
   state.plan.items=[];
   save();render();
+});
+
+
+$("#ipadSideShuttlePlus")?.addEventListener("click",()=>{
+  state.shuttleCount++;
+  save();
+  render();
+});
+$("#ipadSideShuttleMinus")?.addEventListener("click",()=>{
+  state.shuttleCount=Math.max(0,state.shuttleCount-1);
+  save();
+  render();
+});
+$("#ipadGoCostBtn")?.addEventListener("click",()=>{
+  // switch back to regular cost page but remain in tablet display mode
+  document.querySelector("#ipadDashboard")?.classList.add("temporarily-hidden");
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelector("#costPage")?.classList.add("active");
+  document.querySelector("#pageTitle").textContent="สรุปค่าใช้จ่ายวันนี้";
+});
+$("#ipadGoHistoryBtn")?.addEventListener("click",()=>{
+  document.querySelector("#ipadDashboard")?.classList.add("temporarily-hidden");
+  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
+  document.querySelector("#costPage")?.classList.add("active");
+  document.querySelector("#pageTitle").textContent="ประวัติ / เวลาเกม";
+  setTimeout(()=>document.querySelector(".history-card")?.scrollIntoView({behavior:"smooth"}),50);
 });
 
 function render(){

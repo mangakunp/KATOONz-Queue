@@ -825,3 +825,132 @@ body.mode-tablet .ipad-col{min-width:0}
   }
   body.mode-tablet .ipad-rules-card{grid-column:1/-1}
 }
+
+/* ===== v5.9.2 iPad Sidebar + Quick Controls ===== */
+
+.ipad-sidebar-tools{
+  display:none;
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid #2c3341;
+}
+.ipad-tool-title{
+  font-size:10px;
+  color:#aeb7c7;
+  margin-bottom:7px;
+  font-weight:800;
+}
+.ipad-tool-card{
+  padding:9px;
+  border-radius:10px;
+  background:#151b25;
+  border:1px solid #303848;
+  margin-bottom:7px;
+}
+.ipad-tool-card>span{
+  display:block;
+  font-size:10px;
+  color:#d8dfeb;
+  margin-bottom:6px;
+}
+.ipad-shuttle-control{
+  display:grid;
+  grid-template-columns:32px 1fr 32px;
+  gap:5px;
+  align-items:center;
+}
+.ipad-shuttle-control button{
+  border:0;
+  border-radius:8px;
+  height:30px;
+  background:#252d3a;
+  color:#cfc0ff;
+  font-size:18px;
+}
+.ipad-shuttle-control strong{
+  text-align:center;
+  color:#fff;
+  font-size:15px;
+}
+.ipad-side-action{
+  width:100%;
+  margin-top:6px;
+  border:1px solid #39334d;
+  background:#211c2f;
+  color:#dbcfff;
+  padding:8px 9px;
+  border-radius:9px;
+  text-align:left;
+  font-size:10px;
+  font-weight:800;
+}
+
+/* Tablet mode keeps sidebar visible */
+body.mode-tablet .ipad-sidebar-tools{
+  display:block;
+}
+
+@media(min-width:1180px){
+  body.mode-tablet .main-wrap{
+    margin-left:220px!important;
+    width:calc(100% - 220px)!important;
+  }
+  body.mode-tablet .sidebar{
+    display:flex!important;
+    width:220px!important;
+    transform:none!important;
+  }
+  body.mode-tablet .menu-btn{
+    display:none!important;
+  }
+  body.mode-tablet main{
+    max-width:none!important;
+    padding:12px 14px!important;
+  }
+
+  body.mode-tablet #ipadDashboard{
+    grid-template-columns:minmax(240px,.85fr) minmax(420px,1.5fr) minmax(280px,1fr)!important;
+  }
+}
+
+/* medium iPad portrait: sidebar stays, dashboard becomes 2 columns */
+@media(min-width:700px) and (max-width:1179px){
+  body.mode-tablet .main-wrap{
+    margin-left:190px!important;
+    width:calc(100% - 190px)!important;
+  }
+  body.mode-tablet .sidebar{
+    display:flex!important;
+    width:190px!important;
+    transform:none!important;
+  }
+  body.mode-tablet .menu-btn{
+    display:none!important;
+  }
+  body.mode-tablet #ipadDashboard{
+    grid-template-columns:1fr 1.25fr!important;
+  }
+  body.mode-tablet .ipad-col-right{
+    grid-column:1/-1!important;
+  }
+}
+
+/* very small screens still hide sidebar normally */
+@media(max-width:699px){
+  body.mode-tablet .main-wrap{
+    margin-left:0!important;
+    width:100%!important;
+  }
+  body.mode-tablet .sidebar{
+    transform:translateX(-100%)!important;
+  }
+  body.mode-tablet .sidebar.open{
+    transform:translateX(0)!important;
+  }
+  body.mode-tablet .menu-btn{
+    display:block!important;
+  }
+}
+
+body.mode-tablet #ipadDashboard.temporarily-hidden{display:none!important}
+body.mode-tablet #costPage.active{display:block!important}

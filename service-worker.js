@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-9-1-ipad-dashboard";
+const CACHE="katoonz-tomo-v5-9-2-ipad-sidebar";
 const ASSETS=[
   "./",
   "./index.html",

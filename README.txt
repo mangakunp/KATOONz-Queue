@@ -1,21 +1,22 @@
-KATOONz x TOMO Queue Manager v5.9.1 — iPad Dashboard
+KATOONz x TOMO Queue Manager v5.9.2 — iPad Dashboard + Sidebar
 
-เมื่อเลือก Display Mode = Tablet / iPad:
-- เปิด Dashboard แบบเต็มจอทันที
-- ซ้าย: รายชื่อผู้เล่น + เพิ่ม/นำออกวันนี้
-- กลาง: สนามที่กำลังเล่น + Timer นาที:วินาที
-- ขวา: คิวล่วงหน้า + ETA + สรุปเวลาเกม
-- ล่าง: Custom Pairing Rules
-- ไม่ต้องสลับหน้าไปมาเหมือน Smartphone
+แก้ไข:
+- iPad/Tablet Dashboard ยังอยู่เหมือนเดิม
+- Sidebar ด้านซ้ายกลับมา
+- เพิ่ม Quick Control ใน Sidebar:
+  • เพิ่ม/ลดจำนวนลูก
+  • ไปหน้าสรุปค่าใช้จ่าย
+  • ไปหน้าประวัติ / เวลาเกม
+- Landscape iPad แสดง Dashboard + Sidebar พร้อมกัน
+- Portrait iPad ยังมี Sidebar แต่ Dashboard ปรับเหลือ 2 คอลัมน์
+- Smartphone ยังใช้ layout เดิม
 
-Smartphone:
-- ยังใช้โหมดหน้าแบบกระชับเหมือนเดิม
-
-ระบบเดิมอยู่ครบ:
-- Neon Purple UI
+ระบบเดิมยังอยู่ครบ:
+- Neon Purple
 - Round-Robin Mixer
-- Custom Pairing Rules
 - Game Time Tracking
 - ETA
+- Custom Pairing Rules
+- Display Mode
 - Offline / Local Storage
 - Backup / Restore
