@@ -968,3 +968,6 @@ body.mode-tablet .ipad-rules-card{display:block!important}
 body:not(.mode-tablet) .ipad-rules-card{display:none!important}
 .rule-item .rule-type{font-weight:800}
 .rule-item .rule-person{font-weight:700}
+
+/* v5.9.4 rules tab */
+.rules-page-card{margin-top:0}

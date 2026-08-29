@@ -213,7 +213,7 @@ function showPage(id){
   }
   $$(".page").forEach(p=>p.classList.toggle("active",p.id===id));
   $$(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
-  const titles={playersPage:"รายชื่อผู้เล่น (ทั้งหมด)",todayPage:"การเล่นวันนี้",costPage:"สรุปค่าใช้จ่ายวันนี้"};
+  const titles={playersPage:"รายชื่อผู้เล่น (ทั้งหมด)",rulesPage:"Custom Pairing Rules",todayPage:"การเล่นวันนี้",costPage:"สรุปค่าใช้จ่ายวันนี้"};
   $("#pageTitle").textContent=titles[id]||"KATOONz Queue";
   if(window.innerWidth<=900)$("#sidebar").classList.remove("open");
   localStorage.setItem("katoonz_v5_page",id);
@@ -897,6 +897,7 @@ function deletePairRule(id){
 }
 
 function renderPairRules(){
+  populateRulePlayers();
   const items=state.pairingRules.items||[];
   const html=items.length?items.map(r=>`
     <div class="rule-item">
@@ -907,25 +908,20 @@ function renderPairRules(){
       <div class="rule-strength rule-${r.strength}">${r.strength}</div>
       <button class="rule-delete" data-id="${r.id}">ลบ</button>
     </div>
-  `).join(""):'<div class="rule-empty">ยังไม่มีกฎพิเศษ — กด “เพิ่มวันนี้” ที่รายชื่อผู้เล่นเพื่อสร้างกฎได้เลย</div>';
+  `).join(""):'<div class="rule-empty">ยังไม่มีกฎพิเศษ — ไปที่แท็บ Custom Pairing Rules เพื่อเพิ่มกฎได้เลย</div>';
 
-  ["rulesListPhone","rulesListIpad"].forEach(id=>{
-    const el=$("#"+id); if(el) el.innerHTML=html;
-  });
+  const list=$("#rulesList"); if(list) list.innerHTML=html;
   $$(".rule-delete").forEach(b=>b.onclick=()=>deletePairRule(b.dataset.id));
-
-  ["pairRulesEnabledPhone","pairRulesEnabledIpad"].forEach(id=>{
-    const el=$("#"+id); if(el) el.checked=!!state.pairingRules.enabled;
-  });
+  const enabled=$("#pairRulesEnabled"); if(enabled) enabled.checked=!!state.pairingRules.enabled;
 
   const conflicts=validateRules();
-  ["ruleConflictBoxPhone","ruleConflictBoxIpad"].forEach(id=>{
-    const box=$("#"+id); if(!box)return;
+  const box=$("#ruleConflictBox");
+  if(box){
     if(conflicts.length){
       box.classList.remove("hidden");
       box.textContent="⚠️ กฎขัดกัน: "+conflicts.join(", ");
     }else box.classList.add("hidden");
-  });
+  }
 }
 
 function renderMembers(){
@@ -946,7 +942,7 @@ function renderMembers(){
       </div>
     </div>`
   }).join(""):'<div class="empty-state">ไม่พบรายชื่อผู้เล่น</div>';
-  $$(".add-today").forEach(b=>b.onclick=()=>openAddTodayModal(+b.dataset.id));
+  $$(".add-today").forEach(b=>b.onclick=()=>addToday(+b.dataset.id));
   $$(".remove-today").forEach(b=>b.onclick=()=>removeToday(+b.dataset.id));
   $$(".edit-member").forEach(b=>b.onclick=()=>openQuickEdit(+b.dataset.id,"name"));
   $$(".edit-lv").forEach(b=>b.onclick=()=>quickLevel(+b.dataset.id));
@@ -1180,13 +1176,14 @@ function renderTimingSummary(){
 }
 
 
-["pairRulesEnabledPhone","pairRulesEnabledIpad"].forEach(id=>$("#"+id)?.addEventListener("change",e=>{
+$("#addRuleBtn")?.addEventListener("click",addPairRule);
+$("#pairRulesEnabled")?.addEventListener("change",e=>{
   state.pairingRules.enabled=e.target.checked;
   state.plan.items=[];
   save();
   renderPairRules();
   renderLookahead();
-}));
+});
 
 
 function renderIpadDashboard(){
@@ -1210,7 +1207,7 @@ function renderIpadDashboard(){
     </div>`;
   }).join(""):'<div class="empty-state">ไม่พบผู้เล่น</div>';
 
-  $$(".ipad-add-today").forEach(b=>b.onclick=()=>openAddTodayModal(+b.dataset.id));
+  $$(".ipad-add-today").forEach(b=>b.onclick=()=>addToday(+b.dataset.id));
   $$(".ipad-remove-today").forEach(b=>b.onclick=()=>removeToday(+b.dataset.id));
 
   // courts - reuse renderer output
@@ -1263,20 +1260,7 @@ function renderIpadDashboard(){
     ["นานสุด",d.length?fmtDuration(Math.max(...d)):"-"]
   ].map(([a,b])=>`<div class="timing-stat"><small>${a}</small><strong>${b}</strong></div>`).join("");
 
-  // pairing rules summary
-  $("#ipadRulesEnabled").checked=!!state.pairingRules.enabled;
-  const rules=$("#ipadRulesList");
-  const items=state.pairingRules.items||[];
-  rules.innerHTML=items.length?items.map(r=>`
-    <div class="rule-item">
-      <div class="rule-type">${ruleLabel(r.type)}</div>
-      <div class="rule-person">${esc(member(r.a)?.name||"")}</div>
-      <div class="rule-arrow">↔</div>
-      <div class="rule-person">${esc(member(r.b)?.name||"")}</div>
-      <div class="rule-strength rule-${r.strength}">${r.strength}</div>
-      <button class="rule-delete ipad-rule-delete" data-id="${r.id}">ลบ</button>
-    </div>`).join(""):'<div class="rule-empty">ยังไม่มีกฎพิเศษ</div>';
-  $$(".ipad-rule-delete").forEach(b=>b.onclick=()=>deletePairRule(b.dataset.id));
+  // pairing rules are now managed in separate tab
 }
 
 
@@ -1284,11 +1268,6 @@ $("#ipadAddMemberBtn")?.addEventListener("click",()=>openMemberModal());
 $("#ipadAddCourtBtn")?.addEventListener("click",addCourt);
 $("#ipadRebuildPlanBtn")?.addEventListener("click",()=>{state.plan.items=[];generatePlan();render();});
 $("#ipadPlayerSearch")?.addEventListener("input",renderIpadDashboard);
-$("#ipadRulesEnabled")?.addEventListener("change",e=>{
-  state.pairingRules.enabled=e.target.checked;
-  state.plan.items=[];
-  save();render();
-});
 
 
 $("#ipadSideShuttlePlus")?.addEventListener("click",()=>{

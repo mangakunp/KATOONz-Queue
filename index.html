@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>KATOONz x TOMO Queue Manager v5.9.3</title>
+  <title>KATOONz x TOMO Queue Manager v5.9.4</title>
 </head>
 <body>
 <div class="app-shell">
@@ -19,7 +19,7 @@
       <div class="brand-icon">🏸</div>
       <div>
         <b>KATOONz x TOMO</b>
-        <small>Queue Manager · v5.9.3</small>
+        <small>Queue Manager · v5.9.4</small>
       </div>
     </div>
 
@@ -28,13 +28,17 @@
         <span class="nav-icon">👥</span>
         <span><b>1 รายชื่อผู้เล่น</b><small>สมาชิกทั้งหมด</small></span>
       </button>
+      <button class="nav-btn" data-page="rulesPage">
+        <span class="nav-icon">🧩</span>
+        <span><b>2 Custom Pairing Rules</b><small>ตั้งกฎจับคู่แยกภายหลัง</small></span>
+      </button>
       <button class="nav-btn" data-page="todayPage">
         <span class="nav-icon">📅</span>
-        <span><b>2 การเล่นวันนี้</b><small>ผู้เล่น · คิว · สนาม · ลูก</small></span>
+        <span><b>3 การเล่นวันนี้</b><small>ผู้เล่น · คิว · สนาม · ลูก</small></span>
       </button>
       <button class="nav-btn" data-page="costPage">
         <span class="nav-icon">💰</span>
-        <span><b>3 สรุปค่าใช้จ่าย</b><small>หารเท่ากันวันนี้</small></span>
+        <span><b>4 สรุปค่าใช้จ่าย</b><small>หารเท่ากันวันนี้</small></span>
       </button>
     </nav>
 
@@ -140,14 +144,6 @@
             <div id="ipadTimingSummary" class="timing-summary"></div>
           </section>
         </div>
-        <section class="card ipad-rules-card">
-          <div class="section-head">
-            <div><h2>🧩 กฎจับคู่วันนี้</h2><p>ตั้งกฎจากปุ่ม “เพิ่มวันนี้” ในรายชื่อผู้เล่น</p></div>
-            <label class="switch-row"><input id="pairRulesEnabledIpad" type="checkbox"><span>เปิดใช้กฎ</span></label>
-          </div>
-          <div id="rulesListIpad" class="rules-list"></div>
-          <div id="ruleConflictBoxIpad" class="rule-conflict hidden"></div>
-        </section>
       </section>
 
       <!-- PAGE 1 -->
@@ -180,23 +176,50 @@
 
           <div id="memberList" class="member-list"></div>
         </section>
-
-        <section class="card phone-rules-card">
+      </section>
+      
+      <!-- PAGE 2 -->
+      <section id="rulesPage" class="page">
+        <section class="card rules-page-card">
           <div class="section-head">
             <div>
-              <h2>🧩 Custom Pairing Rules วันนี้</h2>
-              <p>ตั้งกฎจากปุ่ม “เพิ่มวันนี้” และดู/ลบกฎได้ที่นี่</p>
+              <h2>🧩 Custom Pairing Rules</h2>
+              <p>ตั้งกฎแยกทีหลังได้ เหมาะเวลามีคนมาช้า หรือบางคนไม่มา · ไม่ใช้ Level ในการจัดคิว</p>
             </div>
             <label class="switch-row">
-              <input id="pairRulesEnabledPhone" type="checkbox">
+              <input id="pairRulesEnabled" type="checkbox">
               <span>เปิดใช้กฎ</span>
             </label>
           </div>
-          <div id="rulesListPhone" class="rules-list"></div>
-          <div id="ruleConflictBoxPhone" class="rule-conflict hidden"></div>
+
+          <div class="queue-note">
+            กฎที่รองรับ: <b>คู่กันตลอดไม่แยกเล่น</b> · <b>คู่กันถ้าได้เล่นเกมเดียวกัน</b> · <b>ไม่เล่นในเกมเดียวกัน</b> · <b>อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน</b>
+          </div>
+
+          <div class="rules-toolbar">
+            <select id="ruleType">
+              <option value="always_partner">🔒 คู่กันตลอดไม่แยกเล่น</option>
+              <option value="prefer_partner">💜 คู่กันถ้าได้เล่นเกมเดียวกัน</option>
+              <option value="avoid_game">⛔ ไม่เล่นในเกมเดียวกัน</option>
+              <option value="avoid_partner">↔ อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน</option>
+            </select>
+            <select id="rulePlayerA"></select>
+            <span class="rule-arrow">↔</span>
+            <select id="rulePlayerB"></select>
+            <select id="ruleStrength">
+              <option value="soft">Soft</option>
+              <option value="strong" selected>Strong</option>
+              <option value="absolute">Absolute</option>
+            </select>
+            <button id="addRuleBtn" class="primary">＋ เพิ่มกฎ</button>
+          </div>
+
+          <div id="rulesList" class="rules-list"></div>
+          <div id="ruleConflictBox" class="rule-conflict hidden"></div>
         </section>
       </section>
-      <!-- PAGE 2 -->
+
+      <!-- PAGE 3 -->
       <section id="todayPage" class="page">
         <div class="summary-grid four">
           <div class="summary-card mint"><span>มาวันนี้</span><strong id="todayCount">0</strong><small>คน</small></div>
