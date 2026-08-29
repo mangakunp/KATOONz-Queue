@@ -206,3 +206,184 @@ main{padding:18px;max-width:1500px;margin:auto}.page{display:none}.page.active{d
 .lookahead-names{font-size:11px;font-weight:700}.lookahead-status{font-size:9px;padding:4px 7px;border-radius:999px;font-weight:800;background:#e4f6ee;color:#397963}
 
 .round-robin-note{margin-top:5px;font-size:9px;color:#6b5c86;background:#f5f0ff;border-radius:8px;padding:5px 7px}
+
+
+/* ===== v5.7.1 Dark Theme + Purple Level Scale ===== */
+:root{
+  --bg:#0f1116;
+  --card:#1a1e26;
+  --ink:#f4f6f8;
+  --muted:#aab2bf;
+  --line:#343b47;
+
+  --primary:#6fc9bd;
+  --primary-dark:#4fa99e;
+
+  --lv1:#eadcff;
+  --lv1line:#c8a8f3;
+  --lv2:#b78ce8;
+  --lv2line:#9162ca;
+  --lv3:#68408f;
+  --lv3line:#4d2f70;
+}
+
+html,body{
+  background:#0f1116 !important;
+  color:#f4f6f8 !important;
+}
+
+body{
+  background:
+    radial-gradient(circle at top left,#1b2230 0,#0f1116 40%),
+    #0f1116 !important;
+}
+
+/* Main surfaces */
+.card,
+.court-card,
+.lookahead-panel,
+.lookahead-item,
+.modal-card,
+.history-card,
+.compact-card,
+.member-row,
+.selector-card,
+.queue-row,
+.history-day,
+.history-player{
+  background:#1a1e26 !important;
+  color:#f4f6f8 !important;
+  border-color:#343b47 !important;
+  box-shadow:0 8px 24px rgba(0,0,0,.22) !important;
+}
+
+/* Header / sidebar */
+.topbar{
+  background:#151920 !important;
+  border-color:#343b47 !important;
+}
+.sidebar{
+  background:linear-gradient(180deg,#141820,#0d1015) !important;
+}
+.side-nav .nav-btn{
+  background:#ffffff0a !important;
+  color:#e8edf2 !important;
+}
+.side-nav .nav-btn.active{
+  background:linear-gradient(135deg,#3d746d,#315f59) !important;
+  color:#fff !important;
+}
+
+/* Inputs */
+input,select,textarea{
+  background:#242a34 !important;
+  color:#fff !important;
+  border-color:#424b59 !important;
+}
+input::placeholder,textarea::placeholder{color:#8d96a4 !important}
+
+/* Typography */
+h1,h2,h3,h4,b,strong,.member-name,.lookahead-names{
+  color:#f8fafc !important;
+}
+small,p,.muted,.section-head p,.queue-time,.queue-wait,.queue-games{
+  color:#b5bdc8 !important;
+}
+
+/* Summary cards: dark pastel */
+.summary-card.mint{background:#183a35 !important}
+.summary-card.sky{background:#183448 !important}
+.summary-card.lavender{background:#312842 !important}
+.summary-card.cream{background:#44371e !important}
+.summary-card span,.summary-card small,.summary-card strong{
+  color:#f4f6f8 !important;
+}
+
+/* Level: purple gradient */
+.level-dot.lv1{background:#eadcff !important}
+.level-dot.lv2{background:#b78ce8 !important}
+.level-dot.lv3{background:#68408f !important}
+
+.lv-badge.lv1{
+  background:#eadcff !important;
+  color:#4a2f64 !important;
+  border:1px solid #c8a8f3 !important;
+}
+.lv-badge.lv2{
+  background:#b78ce8 !important;
+  color:#2f1647 !important;
+  border:1px solid #9162ca !important;
+}
+.lv-badge.lv3{
+  background:#68408f !important;
+  color:#fff !important;
+  border:1px solid #4d2f70 !important;
+}
+
+/* Queue / round-robin */
+.queue-note{
+  background:#1d2f2d !important;
+  color:#bfe8df !important;
+  border-color:#315a54 !important;
+}
+.lookahead-panel{
+  background:#181722 !important;
+  border-color:#4b405e !important;
+}
+.lookahead-item{background:#22242d !important}
+.lookahead-no{
+  background:#4d3c68 !important;
+  color:#fff !important;
+}
+.round-robin-note{
+  background:#2b2438 !important;
+  color:#d9cbf0 !important;
+}
+.lookahead-status{
+  background:#21453a !important;
+  color:#afe9d3 !important;
+}
+
+/* Courts */
+.court-card{background:#1c222a !important}
+.court-title input{background:#222933 !important}
+.court-slot{
+  background:#14181f !important;
+  color:#dce2e9 !important;
+  border-color:#444c59 !important;
+}
+.court-slot.filled{
+  background:#232a33 !important;
+  border-color:#586272 !important;
+}
+.court-state-idle{background:#2b3039 !important;color:#c7ced8 !important}
+.court-state-called{background:#44371e !important;color:#ffe3a0 !important}
+.court-state-playing{background:#17364a !important;color:#b7dcf4 !important}
+
+/* Buttons */
+.primary{background:#4eaa9f !important;color:#fff !important}
+.soft-btn{background:#263c39 !important;color:#c9eee8 !important}
+.ghost-btn{background:#262b34 !important;color:#e4e8ee !important}
+.danger-btn,.danger{background:#4c2a31 !important;color:#ffd5dc !important}
+.call-btn{background:#33294a !important;color:#d9ccf7 !important}
+.play-btn{background:#3d877f !important;color:#fff !important}
+.end-btn{background:#4a2a31 !important;color:#ffd7de !important}
+
+/* Cost / history */
+.receipt-line,.history-day-head{border-color:#343b47 !important}
+.per-person{
+  background:#382f1f !important;
+  border-color:#665936 !important;
+}
+.history-stat{background:#222832 !important}
+.history-stat strong{color:#9ad9cf !important}
+.history-player{background:#20252e !important}
+
+/* Modal */
+.modal-bg{background:#000000aa !important}
+
+/* Mobile */
+@media(max-width:700px){
+  body{font-size:14px}
+  .card{border-radius:16px}
+}

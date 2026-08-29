@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-7-roundrobin";
+const CACHE="katoonz-tomo-v5-7-1-dark-purple";
 const ASSETS=[
   "./",
   "./index.html",
