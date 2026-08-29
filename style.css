@@ -971,3 +971,14 @@ body:not(.mode-tablet) .ipad-rules-card{display:none!important}
 
 /* v5.9.4 rules tab */
 .rules-page-card{margin-top:0}
+
+/* v5.9.5 — all pairing rules are absolute */
+.rules-toolbar{grid-template-columns:1.35fr 1fr auto 1fr auto!important}
+.rule-item{grid-template-columns:1.45fr 1fr auto 1fr auto!important}
+.rule-strength,.rule-soft,.rule-strong,.rule-absolute{display:none!important}
+@media(max-width:850px){
+  .rules-toolbar{grid-template-columns:1fr 1fr!important}
+  .rules-toolbar #addRuleBtn{grid-column:1/-1}
+  .rule-item{grid-template-columns:1fr 1fr!important}
+  .rule-item .rule-type{grid-column:1/-1}
+}

@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>KATOONz x TOMO Queue Manager v5.9.4</title>
+  <title>KATOONz x TOMO Queue Manager v5.9.5</title>
 </head>
 <body>
 <div class="app-shell">
@@ -19,7 +19,7 @@
       <div class="brand-icon">🏸</div>
       <div>
         <b>KATOONz x TOMO</b>
-        <small>Queue Manager · v5.9.4</small>
+        <small>Queue Manager · v5.9.5</small>
       </div>
     </div>
 
@@ -184,7 +184,7 @@
           <div class="section-head">
             <div>
               <h2>🧩 Custom Pairing Rules</h2>
-              <p>ตั้งกฎแยกทีหลังได้ เหมาะเวลามีคนมาช้า หรือบางคนไม่มา · ไม่ใช้ Level ในการจัดคิว</p>
+              <p>ตั้งกฎแยกทีหลังได้ เหมาะเวลามีคนมาช้า หรือบางคนไม่มา · ทุกกฎเป็นกฎบังคับ ไม่มีระดับ Soft/Strong</p>
             </div>
             <label class="switch-row">
               <input id="pairRulesEnabled" type="checkbox">
@@ -193,7 +193,7 @@
           </div>
 
           <div class="queue-note">
-            กฎที่รองรับ: <b>คู่กันตลอดไม่แยกเล่น</b> · <b>คู่กันถ้าได้เล่นเกมเดียวกัน</b> · <b>ไม่เล่นในเกมเดียวกัน</b> · <b>อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน</b>
+            กฎทั้งหมดบังคับใช้จริง: <b>คู่กันตลอดไม่แยกเล่น</b> · <b>คู่กันถ้าได้เล่นเกมเดียวกัน</b> · <b>ไม่เล่นในเกมเดียวกัน</b> · <b>อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน</b>
           </div>
 
           <div class="rules-toolbar">
@@ -206,11 +206,6 @@
             <select id="rulePlayerA"></select>
             <span class="rule-arrow">↔</span>
             <select id="rulePlayerB"></select>
-            <select id="ruleStrength">
-              <option value="soft">Soft</option>
-              <option value="strong" selected>Strong</option>
-              <option value="absolute">Absolute</option>
-            </select>
             <button id="addRuleBtn" class="primary">＋ เพิ่มกฎ</button>
           </div>
 
@@ -453,51 +448,6 @@
   </div>
 </div>
 
-
-<!-- Add today / rule modal -->
-<div id="addTodayModal" class="modal hidden">
-  <div class="modal-bg"></div>
-  <div class="modal-card addtoday-modal-card">
-    <div class="modal-head"><h3 id="addTodayModalTitle">เพิ่มผู้เล่นวันนี้</h3><button class="modal-close">×</button></div>
-    <p class="muted">สามารถเพิ่มผู้เล่นอย่างเดียว หรือเพิ่มพร้อมตั้งกฎจับคู่สำหรับวันนี้ได้เลย</p>
-
-    <label>ผู้เล่นหลัก
-      <input id="addTodayPrimaryName" disabled>
-    </label>
-
-    <label class="switch-row modal-switch-row">
-      <input id="addTodayRuleToggle" type="checkbox">
-      <span>เพิ่ม Custom Pairing Rule พร้อมกัน</span>
-    </label>
-
-    <div id="addTodayRuleFields" class="addtoday-rule-fields hidden">
-      <label>ประเภทกฎ
-        <select id="addTodayRuleType">
-          <option value="always_partner">🔒 คู่กันตลอดไม่แยกเล่น</option>
-          <option value="prefer_partner">💜 คู่กันถ้าได้เล่นเกมเดียวกัน</option>
-          <option value="avoid_game">⛔ ไม่เล่นในเกมเดียวกัน</option>
-          <option value="avoid_partner">↔ อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน</option>
-        </select>
-      </label>
-      <label>ผู้เล่นอีกคน
-        <select id="addTodayRulePartner"></select>
-      </label>
-      <label>ความแรงของกฎ
-        <select id="addTodayRuleStrength">
-          <option value="soft">Soft</option>
-          <option value="strong">Strong</option>
-          <option value="absolute" selected>Absolute</option>
-        </select>
-      </label>
-      <small class="muted">ถ้าเลือกกฎ ระบบจะเพิ่มผู้เล่นอีกคนเข้า “วันนี้” ให้อัตโนมัติ (หากยังไม่มี)</small>
-    </div>
-
-    <div class="modal-actions two">
-      <button id="cancelAddTodayBtn" class="ghost-btn wide" type="button">ยกเลิก</button>
-      <button id="confirmAddTodayBtn" class="primary wide" type="button">เพิ่มเข้าวันนี้</button>
-    </div>
-  </div>
-</div>
 
 <script src="app.js"></script>
 
