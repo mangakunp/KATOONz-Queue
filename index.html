@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>KATOONz x TOMO Queue Manager v5.7.1 Dark</title>
+  <title>KATOONz x TOMO Queue Manager v5.8.1</title>
 </head>
 <body>
 <div class="app-shell">
@@ -39,6 +39,16 @@
     </nav>
 
     <div class="sidebar-foot">
+      
+      <div class="display-mode-box">
+        <label for="displayMode">🖥️ รูปแบบหน้าจอ</label>
+        <select id="displayMode">
+          <option value="auto">อัตโนมัติ</option>
+          <option value="phone">Smartphone</option>
+          <option value="tablet">Tablet / iPad</option>
+        </select>
+      </div>
+
       <div class="offline-pill">● OFFLINE-FIRST</div>
       <button id="newDayBtn" class="ghost-btn">🔄 เริ่มวันใหม่</button>
       <button id="backupBtn" class="ghost-btn">⬇️ สำรองข้อมูล</button>
@@ -244,6 +254,13 @@
 
           
 
+
+
+<section class="card timing-summary-card">
+  <div class="section-head"><div><h2>⏱️ Game Time Tracking</h2>
+  <p>จับเวลาจริงตั้งแต่กด “เล่น” จนถึง “จบเกม” และใช้เวลาจริงประมาณ ETA ของคิว</p></div></div>
+  <div id="timingSummary" class="timing-summary"></div>
+</section>
 
 <section class="card history-card">
             <div class="section-head">

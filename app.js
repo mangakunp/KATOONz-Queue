@@ -575,7 +575,11 @@ function endCourt(id){
   if(!c||c.state==="idle")return;
   const ids=c.slots.filter(Boolean);
   if(c.state==="playing"&&ids.length){
-    state.history.unshift({time:Date.now(),court:c.name,slots:[...ids]});
+    state.history.unshift({time:Date.now(),court:c.name,slots:[...ids],
+    startedAt:c.startedAt||null,
+    endedAt:Date.now(),
+    durationMs:c.startedAt?Date.now()-c.startedAt:0
+  });
   }
   ids.forEach(mid=>{
     const p=todayPlayer(mid);
@@ -938,13 +942,99 @@ function renderStats(){
   $("#shuttleCount").textContent=state.shuttleCount;
 }
 $("#rebuildPlanBtn")?.addEventListener("click",()=>{state.plan.items=[];generatePlan();render()});
-function render(){
-  renderMembers();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();
+
+function fmtDuration(ms){
+  ms=Math.max(0,Number(ms)||0);
+  const total=Math.floor(ms/1000), m=Math.floor(total/60), s=total%60;
+  return `${m}:${String(s).padStart(2,"0")}`;
 }
+function fmtClock(ts){
+  if(!ts)return "-";
+  return new Date(ts).toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});
+}
+function completedDurations(){
+  return state.history.map(h=>Number(h.durationMs)||0).filter(x=>x>0);
+}
+function avgGameMs(){
+  const d=completedDurations().slice(0,10);
+  if(!d.length)return 15*60*1000;
+  return d.reduce((a,b)=>a+b,0)/d.length;
+}
+function courtRemainingMs(c){
+  if(c.state!=="playing"||!c.startedAt)return 0;
+  return Math.max(0,avgGameMs()-(Date.now()-c.startedAt));
+}
+function estimateQueueEta(index){
+  const playing=state.courts.filter(c=>c.state==="playing"&&c.startedAt);
+  if(!playing.length)return index===0?0:Math.ceil(index/Math.max(1,state.courts.length))*avgGameMs();
+  const lanes=playing.map(c=>courtRemainingMs(c));
+  while(lanes.length<Math.max(1,state.courts.length))lanes.push(0);
+  for(let i=0;i<=index;i++){
+    lanes.sort((a,b)=>a-b);
+    const start=lanes[0];
+    if(i===index)return start;
+    lanes[0]=start+avgGameMs();
+  }
+  return 0;
+}
+function renderTimingSummary(){
+  const box=$("#timingSummary"); if(!box)return;
+  const d=completedDurations();
+  const avg=d.length?d.reduce((a,b)=>a+b,0)/d.length:0;
+  const min=d.length?Math.min(...d):0, max=d.length?Math.max(...d):0;
+  box.innerHTML=[
+    ["เกมวันนี้",`${d.length} เกม`],
+    ["เฉลี่ย",d.length?fmtDuration(avg):"-"],
+    ["สั้นสุด",d.length?fmtDuration(min):"-"],
+    ["นานสุด",d.length?fmtDuration(max):"-"]
+  ].map(([a,b])=>`<div class="timing-stat"><small>${a}</small><strong>${b}</strong></div>`).join("");
+}
+
+function render(){
+  renderMembers();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();renderTimingSummary();
+}
+
+function applyDisplayMode(mode){
+  document.body.classList.remove("mode-phone","mode-tablet");
+
+  if(mode==="phone"){
+    document.body.classList.add("mode-phone");
+  }else if(mode==="tablet"){
+    document.body.classList.add("mode-tablet");
+  }
+
+  const sel=document.querySelector("#displayMode");
+  if(sel && sel.value!==mode)sel.value=mode;
+
+  localStorage.setItem("katoonz_display_mode",mode);
+}
+
+function initDisplayMode(){
+  const sel=document.querySelector("#displayMode");
+  if(!sel)return;
+
+  const saved=localStorage.getItem("katoonz_display_mode")||"auto";
+  sel.value=saved;
+  applyDisplayMode(saved);
+
+  sel.addEventListener("change",()=>{
+    applyDisplayMode(sel.value);
+  });
+}
+
 render();
+initDisplayMode();
 setInterval(()=>{renderQueue()},60000);
 showPage(localStorage.getItem("katoonz_v5_page")||"playersPage");
 
 if("serviceWorker" in navigator && location.protocol!=="file:"){
   window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(console.error));
 }
+// v5.8 live clock refresh
+setInterval(()=>{
+  document.querySelectorAll(".court-card").forEach(()=>{});
+  if(state.courts.some(c=>c.state==="playing")){
+    renderCourts();
+    renderQueue();
+  }
+},1000);

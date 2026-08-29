@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-7-1-dark-purple";
+const CACHE="katoonz-tomo-v5-8-1-displaymode";
 const ASSETS=[
   "./",
   "./index.html",
