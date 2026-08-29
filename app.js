@@ -278,12 +278,71 @@ $("#saveQuickEditBtn").onclick=()=>{
 };
 function quickLevel(id){openQuickEdit(id,"level")}
 
-function addToday(memberId){
-  if(todayPlayer(memberId))return;
+function ensureToday(memberId){
+  if(todayPlayer(memberId))return false;
   const now=Date.now();
   state.today.push({memberId,joinedAt:now,waitStart:now,status:"waiting",games:0,queuePos:nextQueue()});
-  state.plan.items=[];save();render();
+  return true;
 }
+function addToday(memberId){
+  const added=ensureToday(memberId);
+  if(added){state.plan.items=[];save();render();}
+}
+
+let addTodayContext={memberId:null};
+function populateAddTodayPartner(primaryId){
+  const sel=$("#addTodayRulePartner");
+  if(!sel)return;
+  const options=state.members
+    .filter(m=>m.id!==primaryId)
+    .map(m=>`<option value="${m.id}">${esc(m.name)} · Lv.${m.lv}</option>`)
+    .join("");
+  sel.innerHTML=options || '<option value="">ไม่มีผู้เล่นคนอื่น</option>';
+}
+function openAddTodayModal(memberId){
+  const m=member(memberId); if(!m)return;
+  addTodayContext.memberId=memberId;
+  $("#addTodayModalTitle").textContent=`เพิ่มวันนี้ · ${m.name}`;
+  $("#addTodayPrimaryName").value=`${m.name} (Lv.${m.lv})`;
+  $("#addTodayRuleToggle").checked=false;
+  $("#addTodayRuleType").value='always_partner';
+  $("#addTodayRuleStrength").value='absolute';
+  populateAddTodayPartner(memberId);
+  const wrap=$("#addTodayRuleFields");
+  if(wrap)wrap.classList.add('hidden');
+  $("#addTodayModal").classList.remove('hidden');
+}
+function addPairRuleDirect(type,a,b,strength='absolute'){
+  if(!a||!b||a===b)return false;
+  const dup=(state.pairingRules.items||[]).some(r=>r.type===type&&samePair(r.a,r.b,a,b));
+  if(dup)return false;
+  state.pairingRules.items.push({id:Date.now()+Math.random(),type,a,b,strength});
+  return true;
+}
+function confirmAddTodayModal(){
+  const a=addTodayContext.memberId;
+  if(!a)return;
+  ensureToday(a);
+  if($("#addTodayRuleToggle")?.checked){
+    const b=+($("#addTodayRulePartner")?.value||0);
+    const type=$("#addTodayRuleType")?.value || 'always_partner';
+    const strength=$("#addTodayRuleStrength")?.value || 'absolute';
+    if(!b || a===b) return alert('กรุณาเลือกผู้เล่นอีกคนสำหรับตั้งกฎ');
+    ensureToday(b);
+    addPairRuleDirect(type,a,b,strength);
+    state.pairingRules.enabled=true;
+  }
+  state.plan.items=[];
+  save();
+  closeModals();
+  render();
+}
+$("#addTodayRuleToggle")?.addEventListener('change',e=>{
+  $("#addTodayRuleFields")?.classList.toggle('hidden',!e.target.checked);
+});
+$("#confirmAddTodayBtn")?.addEventListener('click',confirmAddTodayModal);
+$("#cancelAddTodayBtn")?.addEventListener('click',closeModals);
+
 function removeToday(memberId){
   const p=todayPlayer(memberId);
   if(!p)return;
@@ -755,10 +814,10 @@ $("#levelFilter").onchange=renderMembers;
 
 function ruleLabel(type){
   return {
-    prefer_partner:"💜 อยากเป็นคู่กัน",
-    always_partner:"🔒 คู่กันตลอดถ้าอยู่กลุ่มเดียวกัน",
-    avoid_partner:"🚫 ไม่อยากเป็นคู่กัน",
-    avoid_game:"⛔ ไม่อยากอยู่เกมเดียวกัน",
+    always_partner:"🔒 คู่กันตลอดไม่แยกเล่น",
+    prefer_partner:"💜 คู่กันถ้าได้เล่นเกมเดียวกัน",
+    avoid_game:"⛔ ไม่เล่นในเกมเดียวกัน",
+    avoid_partner:"↔ อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน",
     prefer_game:"✨ อยากอยู่เกมเดียวกัน"
   }[type]||type;
 }
@@ -836,14 +895,10 @@ function deletePairRule(id){
   state.plan.items=[];
   save();renderPairRules();renderLookahead();
 }
+
 function renderPairRules(){
-  const enabled=$("#pairRulesEnabled");
-  if(!enabled)return;
-  enabled.checked=!!state.pairingRules.enabled;
-  populateRulePlayers();
-  const list=$("#rulesList");
   const items=state.pairingRules.items||[];
-  list.innerHTML=items.length?items.map(r=>`
+  const html=items.length?items.map(r=>`
     <div class="rule-item">
       <div class="rule-type">${ruleLabel(r.type)}</div>
       <div class="rule-person">${esc(member(r.a)?.name||("ID "+r.a))}</div>
@@ -852,15 +907,25 @@ function renderPairRules(){
       <div class="rule-strength rule-${r.strength}">${r.strength}</div>
       <button class="rule-delete" data-id="${r.id}">ลบ</button>
     </div>
-  `).join(""):'<div class="rule-empty">ยังไม่มีกฎพิเศษ</div>';
+  `).join(""):'<div class="rule-empty">ยังไม่มีกฎพิเศษ — กด “เพิ่มวันนี้” ที่รายชื่อผู้เล่นเพื่อสร้างกฎได้เลย</div>';
+
+  ["rulesListPhone","rulesListIpad"].forEach(id=>{
+    const el=$("#"+id); if(el) el.innerHTML=html;
+  });
   $$(".rule-delete").forEach(b=>b.onclick=()=>deletePairRule(b.dataset.id));
 
+  ["pairRulesEnabledPhone","pairRulesEnabledIpad"].forEach(id=>{
+    const el=$("#"+id); if(el) el.checked=!!state.pairingRules.enabled;
+  });
+
   const conflicts=validateRules();
-  const box=$("#ruleConflictBox");
-  if(conflicts.length){
-    box.classList.remove("hidden");
-    box.textContent="⚠️ กฎขัดกัน: "+conflicts.join(", ");
-  }else box.classList.add("hidden");
+  ["ruleConflictBoxPhone","ruleConflictBoxIpad"].forEach(id=>{
+    const box=$("#"+id); if(!box)return;
+    if(conflicts.length){
+      box.classList.remove("hidden");
+      box.textContent="⚠️ กฎขัดกัน: "+conflicts.join(", ");
+    }else box.classList.add("hidden");
+  });
 }
 
 function renderMembers(){
@@ -881,7 +946,7 @@ function renderMembers(){
       </div>
     </div>`
   }).join(""):'<div class="empty-state">ไม่พบรายชื่อผู้เล่น</div>';
-  $$(".add-today").forEach(b=>b.onclick=()=>addToday(+b.dataset.id));
+  $$(".add-today").forEach(b=>b.onclick=()=>openAddTodayModal(+b.dataset.id));
   $$(".remove-today").forEach(b=>b.onclick=()=>removeToday(+b.dataset.id));
   $$(".edit-member").forEach(b=>b.onclick=()=>openQuickEdit(+b.dataset.id,"name"));
   $$(".edit-lv").forEach(b=>b.onclick=()=>quickLevel(+b.dataset.id));
@@ -1115,14 +1180,13 @@ function renderTimingSummary(){
 }
 
 
-$("#addRuleBtn")?.addEventListener("click",addPairRule);
-$("#pairRulesEnabled")?.addEventListener("change",e=>{
+["pairRulesEnabledPhone","pairRulesEnabledIpad"].forEach(id=>$("#"+id)?.addEventListener("change",e=>{
   state.pairingRules.enabled=e.target.checked;
   state.plan.items=[];
   save();
   renderPairRules();
   renderLookahead();
-});
+}));
 
 
 function renderIpadDashboard(){
@@ -1146,7 +1210,7 @@ function renderIpadDashboard(){
     </div>`;
   }).join(""):'<div class="empty-state">ไม่พบผู้เล่น</div>';
 
-  $$(".ipad-add-today").forEach(b=>b.onclick=()=>addToday(+b.dataset.id));
+  $$(".ipad-add-today").forEach(b=>b.onclick=()=>openAddTodayModal(+b.dataset.id));
   $$(".ipad-remove-today").forEach(b=>b.onclick=()=>removeToday(+b.dataset.id));
 
   // courts - reuse renderer output

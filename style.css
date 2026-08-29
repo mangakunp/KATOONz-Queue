@@ -954,3 +954,17 @@ body.mode-tablet .ipad-sidebar-tools{
 
 body.mode-tablet #ipadDashboard.temporarily-hidden{display:none!important}
 body.mode-tablet #costPage.active{display:block!important}
+
+
+/* v5.9.3 Inline Rules */
+.phone-rules-card{margin-top:12px}
+.addtoday-modal-card{width:min(94vw,560px)}
+.addtoday-rule-fields{display:grid;gap:10px;padding:10px;border:1px solid var(--line);border-radius:14px;background:#ffffff08}
+.modal-switch-row{justify-content:flex-start;gap:8px}
+.modal-actions.two{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media(max-width:640px){.modal-actions.two{grid-template-columns:1fr}}
+body.mode-tablet .phone-rules-card{display:none!important}
+body.mode-tablet .ipad-rules-card{display:block!important}
+body:not(.mode-tablet) .ipad-rules-card{display:none!important}
+.rule-item .rule-type{font-weight:800}
+.rule-item .rule-person{font-weight:700}

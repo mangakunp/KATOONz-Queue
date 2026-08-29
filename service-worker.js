@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-9-2-ipad-sidebar";
+const CACHE="katoonz-tomo-v5-9-3-inline-rules";
 const ASSETS=[
   "./",
   "./index.html",
