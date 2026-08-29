@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-9-5-absolute-rules";
+const CACHE="katoonz-tomo-v5-9-6-stable-responsive";
 const ASSETS=[
   "./",
   "./index.html",

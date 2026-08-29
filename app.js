@@ -210,10 +210,6 @@ function currentDateThai(){
 }
 
 function showPage(id){
-  const dash=document.querySelector("#ipadDashboard");
-  if(document.body.classList.contains("mode-tablet") && dash){
-    dash.classList.remove("temporarily-hidden");
-  }
   $$(".page").forEach(p=>p.classList.toggle("active",p.id===id));
   $$(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
   const titles={playersPage:"รายชื่อผู้เล่น (ทั้งหมด)",rulesPage:"Custom Pairing Rules",todayPage:"การเล่นวันนี้",costPage:"สรุปค่าใช้จ่ายวันนี้"};
@@ -1153,150 +1149,12 @@ $("#pairRulesEnabled")?.addEventListener("change",e=>{
 });
 
 
-function renderIpadDashboard(){
-  if(!document.querySelector("#ipadDashboard"))return;
-
-  // members
-  const q=(document.querySelector("#ipadPlayerSearch")?.value||"").trim().toLowerCase();
-  const members=state.members.filter(m=>!q||m.name.toLowerCase().includes(q));
-  const ml=$("#ipadMemberList");
-  ml.innerHTML=members.length?members.map((m,i)=>{
-    const t=todayPlayer(m.id);
-    return `<div class="ipad-member-row">
-      <div>${i+1}</div>
-      <div>
-        <div class="member-level-dot-wrap"><span class="level-dot lv${m.lv}"></span><span class="name">${esc(m.name)}</span></div>
-        <small>Lv.${m.lv}${t?" · วันนี้ "+formatTime(t.joinedAt):""}</small>
-      </div>
-      <div class="ipad-member-actions">
-        ${t?`<button class="mini-btn ipad-remove-today" data-id="${m.id}">นำออก</button>`:`<button class="primary ipad-add-today" data-id="${m.id}">เพิ่มวันนี้</button>`}
-      </div>
-    </div>`;
-  }).join(""):'<div class="empty-state">ไม่พบผู้เล่น</div>';
-
-  $$(".ipad-add-today").forEach(b=>b.onclick=()=>addToday(+b.dataset.id));
-  $$(".ipad-remove-today").forEach(b=>b.onclick=()=>removeToday(+b.dataset.id));
-
-  // courts - reuse renderer output
-  renderCourts();
-  const srcCourts=$("#courtList");
-  const dstCourts=$("#ipadCourtList");
-  if(srcCourts&&dstCourts){
-    dstCourts.innerHTML=srcCourts.innerHTML;
-    dstCourts.querySelectorAll(".court-delete").forEach(b=>b.onclick=()=>deleteCourt(+b.dataset.id));
-    dstCourts.querySelectorAll(".court-name-input").forEach(i=>i.onchange=()=>renameCourt(+i.dataset.id,i.value));
-    dstCourts.querySelectorAll(".call-btn").forEach(b=>b.onclick=()=>callCourt(+b.dataset.id));
-    dstCourts.querySelectorAll(".play-btn").forEach(b=>b.onclick=()=>playCourt(+b.dataset.id));
-    dstCourts.querySelectorAll(".end-btn").forEach(b=>b.onclick=()=>endCourt(+b.dataset.id));
-    dstCourts.querySelectorAll(".court-slot.filled").forEach(b=>b.onclick=()=>openReplace(+b.dataset.cid,+b.dataset.slot));
-  }
-
-  // queue / ETA
-  if(!state.plan.items.length)generatePlan();
-  const qbox=$("#ipadQueueList");
-  const plans=(state.plan.items||[]).slice(0,5);
-  qbox.innerHTML=plans.length?plans.map((it,i)=>{
-    const names=it.ids.map(id=>member(id)?.name||("ID "+id));
-    const eta=estimateQueueEta(i);
-    return `<div class="ipad-queue-item">
-      <div class="ipad-queue-no">#${i+1}</div>
-      <div class="ipad-queue-names">${names.map(esc).join(" · ")}</div>
-      <div class="ipad-eta">≈ ${Math.max(0,Math.round(eta/60000))} นาที</div>
-    </div>`;
-  }).join(""):'<div class="empty-state">ยังไม่มีคิว</div>';
-
-  // today mini summary
-  const playing=state.today.filter(p=>p.status==="playing").length;
-  const waiting=state.today.filter(p=>p.status==="waiting").length;
-  if($("#ipadSideShuttleCount"))$("#ipadSideShuttleCount").textContent=state.shuttleCount;
-
-  $("#ipadTodaySummary").innerHTML=[
-    ["วันนี้",state.today.length+" คน"],
-    ["เล่น",playing+" คน"],
-    ["รอ",waiting+" คน"],
-    ["ลูก",state.shuttleCount+" ลูก"]
-  ].map(([a,b])=>`<div class="ipad-mini-stat"><small>${a}</small><strong>${b}</strong></div>`).join("");
-
-  // timing summary
-  const d=completedDurations();
-  const avg=d.length?d.reduce((a,b)=>a+b,0)/d.length:0;
-  $("#ipadTimingSummary").innerHTML=[
-    ["เกม",d.length],
-    ["เฉลี่ย",d.length?fmtDuration(avg):"-"],
-    ["สั้นสุด",d.length?fmtDuration(Math.min(...d)):"-"],
-    ["นานสุด",d.length?fmtDuration(Math.max(...d)):"-"]
-  ].map(([a,b])=>`<div class="timing-stat"><small>${a}</small><strong>${b}</strong></div>`).join("");
-
-  // pairing rules are now managed in separate tab
-}
-
-
-$("#ipadAddMemberBtn")?.addEventListener("click",()=>openMemberModal());
-$("#ipadAddCourtBtn")?.addEventListener("click",addCourt);
-$("#ipadRebuildPlanBtn")?.addEventListener("click",()=>{state.plan.items=[];generatePlan();render();});
-$("#ipadPlayerSearch")?.addEventListener("input",renderIpadDashboard);
-
-
-$("#ipadSideShuttlePlus")?.addEventListener("click",()=>{
-  state.shuttleCount++;
-  save();
-  render();
-});
-$("#ipadSideShuttleMinus")?.addEventListener("click",()=>{
-  state.shuttleCount=Math.max(0,state.shuttleCount-1);
-  save();
-  render();
-});
-$("#ipadGoCostBtn")?.addEventListener("click",()=>{
-  // switch back to regular cost page but remain in tablet display mode
-  document.querySelector("#ipadDashboard")?.classList.add("temporarily-hidden");
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.querySelector("#costPage")?.classList.add("active");
-  document.querySelector("#pageTitle").textContent="สรุปค่าใช้จ่ายวันนี้";
-});
-$("#ipadGoHistoryBtn")?.addEventListener("click",()=>{
-  document.querySelector("#ipadDashboard")?.classList.add("temporarily-hidden");
-  document.querySelectorAll(".page").forEach(p=>p.classList.remove("active"));
-  document.querySelector("#costPage")?.classList.add("active");
-  document.querySelector("#pageTitle").textContent="ประวัติ / เวลาเกม";
-  setTimeout(()=>document.querySelector(".history-card")?.scrollIntoView({behavior:"smooth"}),50);
-});
-
 function render(){
-  renderMembers();renderPairRules();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();renderTimingSummary();renderIpadDashboard();
+  renderMembers();renderPairRules();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();renderTimingSummary();
 }
 
-function applyDisplayMode(mode){
-  document.body.classList.remove("mode-phone","mode-tablet");
-
-  if(mode==="phone"){
-    document.body.classList.add("mode-phone");
-  }else if(mode==="tablet"){
-    document.body.classList.add("mode-tablet");
-  }
-
-  const sel=document.querySelector("#displayMode");
-  if(sel && sel.value!==mode)sel.value=mode;
-
-  localStorage.setItem("katoonz_display_mode",mode);
-  setTimeout(()=>{try{renderIpadDashboard()}catch(e){}},0);
-}
-
-function initDisplayMode(){
-  const sel=document.querySelector("#displayMode");
-  if(!sel)return;
-
-  const saved=localStorage.getItem("katoonz_display_mode")||"auto";
-  sel.value=saved;
-  applyDisplayMode(saved);
-
-  sel.addEventListener("change",()=>{
-    applyDisplayMode(sel.value);
-  });
-}
-
+localStorage.removeItem("katoonz_display_mode");
 render();
-initDisplayMode();
 setInterval(()=>{renderQueue()},60000);
 showPage(localStorage.getItem("katoonz_v5_page")||"playersPage");
 
@@ -1312,8 +1170,3 @@ setInterval(()=>{
   }
 },1000);
 
-setInterval(()=>{
-  if(document.body.classList.contains("mode-tablet") && state.courts.some(c=>c.state==="playing")){
-    try{renderIpadDashboard()}catch(e){}
-  }
-},1000);

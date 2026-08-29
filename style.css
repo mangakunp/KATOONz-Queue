@@ -982,3 +982,59 @@ body:not(.mode-tablet) .ipad-rules-card{display:none!important}
   .rule-item{grid-template-columns:1fr 1fr!important}
   .rule-item .rule-type{grid-column:1/-1}
 }
+
+
+/* ===== v5.9.6 Stable Responsive — no manual display mode ===== */
+
+/* One responsive layout only. No Smartphone / Tablet / iPad selector. */
+.ipad-dashboard,
+.ipad-sidebar-tools,
+.display-mode-box{
+  display:none!important;
+}
+
+/* Desktop + iPad landscape */
+@media(min-width:901px){
+  .sidebar{
+    width:230px!important;
+    transform:none!important;
+  }
+  .main-wrap{
+    margin-left:230px!important;
+    width:calc(100% - 230px)!important;
+  }
+  .menu-btn{display:none!important}
+  .court-grid{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  }
+}
+
+/* Tablet portrait + Smartphone:
+   use the same UI, only collapse the sidebar into the menu drawer. */
+@media(max-width:900px){
+  .sidebar{
+    width:min(82vw,250px)!important;
+  }
+  .main-wrap{
+    margin-left:0!important;
+    width:100%!important;
+  }
+  .menu-btn{display:block!important}
+  .court-grid{
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr))!important;
+  }
+}
+
+/* Smartphone */
+@media(max-width:620px){
+  main{padding:8px!important}
+  .court-grid{grid-template-columns:1fr!important}
+  .summary-grid.four{grid-template-columns:repeat(2,1fr)!important}
+  .cost-layout,.today-layout{grid-template-columns:1fr!important}
+  .timing-summary{grid-template-columns:repeat(2,1fr)!important}
+}
+
+/* Timer remains lightweight: only the regular court view updates once/sec. */
+.game-live-time{
+  font-variant-numeric:tabular-nums;
+}

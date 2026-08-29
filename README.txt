@@ -1,14 +1,23 @@
-KATOONz x TOMO Queue Manager v5.9.5 — Absolute Pairing Rules OFFLINE
+KATOONz x TOMO Queue Manager v5.9.6 — Stable Responsive OFFLINE
 
-ใหม่:
-- ตัด Soft / Strong / Absolute ออกจากหน้าจอ
-- ทุก Custom Pairing Rule เป็นกฎบังคับ 100%
-- ข้อมูลกฎเก่าที่เคยเป็น Soft/Strong จะถูกแปลงเป็นกฎบังคับอัตโนมัติ
+แก้ปัญหาความหน่วง/รวน:
+- ตัดระบบเลือก Display Mode (Auto / Smartphone / Tablet-iPad) ออกทั้งหมด
+- ตัด iPad Dashboard ที่ render หน้าจอซ้ำออก
+- เหลือ UI ชุดเดียว ใช้ CSS Responsive ปรับตามขนาดจออัตโนมัติ
+- ลดการ render ซ้ำของสนาม/คิวบน iPad
+- Timer เกมยังอัปเดตแบบ real-time ทุก 1 วินาทีเฉพาะหน้าสนามชุดเดียว
 
-ความหมายกฎ:
-1. คู่กันตลอดไม่แยกเล่น — ถ้าคนหนึ่งได้ลง อีกคนต้องลงเกมเดียวกันและเป็นคู่กัน
-2. คู่กันถ้าได้เล่นเกมเดียวกัน — เล่นแยกกันได้ แต่ถ้าบังเอิญอยู่เกมเดียวกันต้องเป็นคู่กัน
-3. ไม่เล่นในเกมเดียวกัน — ห้ามอยู่ใน 4 คนเกมเดียวกัน
-4. อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน — อยู่เกมเดียวกันได้ แต่ห้ามเป็นคู่กัน
+การแสดงผล:
+- จอใหญ่ / iPad แนวนอน: Sidebar คงที่ + สนาม 2 คอลัมน์
+- iPad แนวตั้ง / จอไม่เกิน 900px: Sidebar เป็นเมนู ☰
+- Smartphone: สนาม 1 คอลัมน์ และ layout กระชับอัตโนมัติ
 
-ถ้ากฎทำให้ไม่มีชุด 4 คนที่เป็นไปได้ ระบบจะไม่ฝืนกฎและจะแจ้งเตือนให้ตรวจสอบกฎ
+ระบบเดิมยังอยู่:
+- Custom Pairing Rules แท็บแยก
+- Absolute Rules 4 แบบ
+- Round-Robin Mixer / Lookahead Queue
+- Game Time Tracking / ETA
+- Dark Purple / Neon UI
+- ค่าใช้จ่าย / QR
+- Backup / Restore
+- Offline-first
