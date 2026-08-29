@@ -320,68 +320,147 @@ function deleteCourt(id){
 }
 function renameCourt(id,val){const c=state.courts.find(c=>c.id===id);if(c){c.name=val.trim()||String(id);save()}}
 
+
 function groupKey(ids){return ids.slice().sort((a,b)=>a-b).join("-")}
-function recentMeetPenalty(ids){
-  let score=0;
-  const recent=state.history.slice(0,10);
-  for(let x=0;x<ids.length;x++)for(let y=x+1;y<ids.length;y++){
-    const k=pairKey(ids[x],ids[y]);
-    recent.forEach((h,i)=>{
-      const s=h.slots||[];
-      for(let a=0;a<s.length;a++)for(let b=a+1;b<s.length;b++){
-        if(pairKey(s[a],s[b])===k)score+=10-i;
-      }
-    });
-  }
-  return score;
-}
-function groupRepeat(ids){
-  const k=groupKey(ids);
-  return state.history.reduce((n,h)=>{
+function rrPairKey(a,b){return [a,b].sort((x,y)=>x-y).join("-")}
+
+function rrHistory(){
+  const group={}, meet={}, partner={}, opponent={};
+  state.history.forEach(h=>{
     const s=(h.slots||[]).filter(Boolean);
-    return n+(s.length===4&&groupKey(s)===k?1:0)
-  },0);
+    if(s.length!==4)return;
+
+    group[groupKey(s)]=(group[groupKey(s)]||0)+1;
+
+    for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+      const k=rrPairKey(s[i],s[j]);
+      meet[k]=(meet[k]||0)+1;
+    }
+
+    [[s[0],s[1]],[s[2],s[3]]].forEach(([a,b])=>{
+      const k=rrPairKey(a,b); partner[k]=(partner[k]||0)+1;
+    });
+
+    [[s[0],s[2]],[s[0],s[3]],[s[1],s[2]],[s[1],s[3]]].forEach(([a,b])=>{
+      const k=rrPairKey(a,b); opponent[k]=(opponent[k]||0)+1;
+    });
+  });
+  return {group,meet,partner,opponent};
 }
+
+function rrBestPairing(ids, hist, virtualPartner, virtualOpponent){
+  const opts=[
+    [ids[0],ids[1],ids[2],ids[3]],
+    [ids[0],ids[2],ids[1],ids[3]],
+    [ids[0],ids[3],ids[1],ids[2]]
+  ];
+  let best=opts[0], bestScore=Infinity;
+  opts.forEach(z=>{
+    const p1=rrPairKey(z[0],z[1]), p2=rrPairKey(z[2],z[3]);
+    const opp=[
+      rrPairKey(z[0],z[2]),rrPairKey(z[0],z[3]),
+      rrPairKey(z[1],z[2]),rrPairKey(z[1],z[3])
+    ];
+    const s=
+      ((hist.partner[p1]||0)+(hist.partner[p2]||0)+(virtualPartner[p1]||0)+(virtualPartner[p2]||0))*60 +
+      opp.reduce((n,k)=>n+(hist.opponent[k]||0)+(virtualOpponent[k]||0),0)*12;
+    if(s<bestScore){bestScore=s;best=z}
+  });
+  return best;
+}
+
 function generatePlan(){
-  const base=waitingQueue().map(p=>({...p}));
-  const plans=[], virtual=[...base];
-  for(let round=0;round<5 && virtual.length>=4;round++){
-    const pool=virtual.slice(0,Math.min(9,virtual.length));
-    let best=null,bestScore=1e9;
-    for(let a=0;a<pool.length;a++)for(let b=a+1;b<pool.length;b++)for(let c=b+1;c<pool.length;c++)for(let d=c+1;d<pool.length;d++){
-      const four=[pool[a],pool[b],pool[c],pool[d]], ids=four.map(x=>x.memberId);
-      const waitPenalty=(a+b+c+d)*15;
-      const score=waitPenalty+groupRepeat(ids)*100+recentMeetPenalty(ids)*4;
+  const hist=rrHistory();
+  const plans=[];
+  let virtual=waitingQueue().map(p=>({...p}));
+  const vGroup={}, vMeet={}, vPartner={}, vOpponent={}, vUse={};
+
+  for(let round=0; round<5 && virtual.length>=4; round++){
+    const pool=virtual.slice(0,Math.min(12,virtual.length));
+    let best=null,bestScore=Infinity;
+
+    for(let a=0;a<pool.length;a++)
+    for(let b=a+1;b<pool.length;b++)
+    for(let c=b+1;c<pool.length;c++)
+    for(let d=c+1;d<pool.length;d++){
+      const four=[pool[a],pool[b],pool[c],pool[d]];
+      const ids=four.map(x=>x.memberId);
+
+      let score=(a+b+c+d)*18;
+      score+=((hist.group[groupKey(ids)]||0)+(vGroup[groupKey(ids)]||0))*180;
+      score+=ids.reduce((n,id)=>n+(vUse[id]||0),0)*35;
+
+      for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+        const k=rrPairKey(ids[i],ids[j]);
+        score+=((hist.meet[k]||0)+(vMeet[k]||0))*18;
+      }
+
       if(score<bestScore){bestScore=score;best=four}
     }
+
     if(!best)break;
+
     const ids=best.map(x=>x.memberId);
-    plans.push({ids,paired:pairFour(best)});
+    const paired=rrBestPairing(ids,hist,vPartner,vOpponent);
+    plans.push({ids,paired});
+
+    vGroup[groupKey(ids)]=(vGroup[groupKey(ids)]||0)+1;
+    ids.forEach(id=>vUse[id]=(vUse[id]||0)+1);
+
+    for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
+      const k=rrPairKey(ids[i],ids[j]);
+      vMeet[k]=(vMeet[k]||0)+1;
+    }
+
+    [[paired[0],paired[1]],[paired[2],paired[3]]].forEach(([a,b])=>{
+      const k=rrPairKey(a,b); vPartner[k]=(vPartner[k]||0)+1;
+    });
+
+    [[paired[0],paired[2]],[paired[0],paired[3]],[paired[1],paired[2]],[paired[1],paired[3]]].forEach(([a,b])=>{
+      const k=rrPairKey(a,b); vOpponent[k]=(vOpponent[k]||0)+1;
+    });
+
     const used=new Set(ids);
     const remain=virtual.filter(p=>!used.has(p.memberId));
-    best.forEach(p=>remain.push({...p,queuePos:(remain.at(-1)?.queuePos||0)+1}));
-    virtual.splice(0,virtual.length,...remain);
+    let qmax=remain.reduce((m,p)=>Math.max(m,+p.queuePos||0),0);
+    best.forEach(p=>remain.push({...p,queuePos:++qmax}));
+    virtual=remain;
   }
-  state.plan.items=plans; save(); return plans;
+
+  state.plan.items=plans;
+  save();
+  return plans;
 }
+
 function nextPlanned(){
   if(!state.plan.items.length)generatePlan();
   while(state.plan.items.length){
     const item=state.plan.items.shift();
-    const ok=item.ids.every(id=>todayPlayer(id)?.status==="waiting");
-    if(ok)return item.ids.map(id=>todayPlayer(id));
+    if(item.ids.every(id=>todayPlayer(id)?.status==="waiting")){
+      return item.ids.map(id=>todayPlayer(id));
+    }
   }
   return null;
 }
-function renderLookahead(){
-  const box=$("#lookaheadList"); if(!box)return;
-  if(!state.plan.items.length)generatePlan();
-  box.innerHTML=state.plan.items.length?state.plan.items.slice(0,5).map((it,i)=>{
-    const names=it.ids.map(id=>member(id)?.name||("ID "+id));
-    return `<div class="lookahead-item"><div class="lookahead-no">${i+1}</div><div class="lookahead-names">${names.map(esc).join(" · ")}</div><div class="lookahead-status">ถัดไป</div></div>`;
-  }).join(""):'<div class="empty-state">ยังวางคิวล่วงหน้าไม่ได้</div>';
-}
 
+function renderLookahead(){
+  const box=$("#lookaheadList");
+  if(!box)return;
+  if(!state.plan.items.length)generatePlan();
+  box.innerHTML=state.plan.items.length
+    ? state.plan.items.slice(0,5).map((it,i)=>{
+        const names=it.ids.map(id=>member(id)?.name||("ID "+id));
+        return `<div class="lookahead-item">
+          <div class="lookahead-no">${i+1}</div>
+          <div>
+            <div class="lookahead-names">${names.map(esc).join(" · ")}</div>
+            <div class="round-robin-note">ไม่ใช้ Level · ลดกลุ่มซ้ำ · ลดคู่ซ้ำ · ลดคนเดิมเจอบ่อย</div>
+          </div>
+          <div class="lookahead-status">ถัดไป</div>
+        </div>`;
+      }).join("")
+    : '<div class="empty-state">ยังวางคิวล่วงหน้าไม่ได้</div>';
+}
 function chooseNextFour(){const p=nextPlanned();if(p&&p.length===4)return p;const q=waitingQueue();return q.length>=4?q.slice(0,4):null;}
 function pairKey(a,b){
   return [a,b].sort((x,y)=>x-y).join("-");
@@ -447,28 +526,8 @@ function scorePairing(z,stats){
 }
 
 function pairFour(players){
-  // ผู้เล่น 4 คนถูกเลือกจาก "คนรอนานที่สุด" มาแล้ว
-  // ตรงนี้ไม่ใช้ Level และไม่เปลี่ยนว่าใครได้ลง
-  const mids=players.map(p=>p.memberId);
-
-  const pairings=[
-    [mids[0],mids[1],mids[2],mids[3]],
-    [mids[0],mids[2],mids[1],mids[3]],
-    [mids[0],mids[3],mids[1],mids[2]]
-  ];
-
-  const stats=encounterStats();
-
-  pairings.sort((a,b)=>{
-    const sa=scorePairing(a,stats);
-    const sb=scorePairing(b,stats);
-    if(sa!==sb)return sa-sb;
-
-    // ถ้าคะแนนเท่ากัน สุ่มเล็กน้อยเพื่อไม่ให้รูปแบบตายตัว
-    return Math.random()-.5;
-  });
-
-  return pairings[0];
+  const ids=players.map(p=>p.memberId);
+  return rrBestPairing(ids,rrHistory(),{},{});
 }
 
 function courtDiversityScore(mid,courtName){

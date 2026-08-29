@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-6-offline-lookahead";
+const CACHE="katoonz-tomo-v5-7-roundrobin";
 const ASSETS=[
   "./",
   "./index.html",
