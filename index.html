@@ -10,7 +10,7 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>KATOONz x TOMO Queue Manager v5.9.7</title>
+  <title>KATOONz x TOMO Queue Manager v5.9.8</title>
 </head>
 <body>
 <div class="app-shell">
@@ -19,7 +19,7 @@
       <div class="brand-icon">🏸</div>
       <div>
         <b>KATOONz x TOMO</b>
-        <small>Queue Manager · v5.9.7</small>
+        <small>Queue Manager · v5.9.8</small>
       </div>
     </div>
 
@@ -89,12 +89,6 @@
 
           <div class="toolbar">
             <input id="playerSearch" placeholder="🔎 ค้นหาชื่อผู้เล่น...">
-            <select id="levelFilter">
-              <option value="all">ทุก Level</option>
-              <option value="1">Lv.1</option>
-              <option value="2">Lv.2</option>
-              <option value="3">Lv.3</option>
-            </select>
           </div>
 
           <div id="memberList" class="member-list"></div>
@@ -158,8 +152,8 @@
             </div>
             <div class="queue-note">
       🤖 Smart Rotation แบบ Offline — เลือก 4 คนที่รอนานที่สุดก่อนเสมอ
-      จากนั้นค่อยจัดคู่โดยลด “คู่เดิม” และ “คนที่เพิ่งเจอกัน” โดยไม่ใช้ Level
-    </div><div class="lookahead-panel"><div class="lookahead-head"><div><b>🔮 คิวล่วงหน้า</b><small>Round‑Robin Mixer: ลดกลุ่มเดิม คู่เดิม และคนเดิมเจอบ่อย โดยไม่ใช้ Level</small></div><button id="rebuildPlanBtn" class="soft-btn">จัดคิวใหม่</button></div><div id="lookaheadList" class="lookahead-list"></div></div>
+      จากนั้นค่อยจัดคู่โดยลด “คู่เดิม” และ “คนที่เพิ่งเจอกัน”
+    </div><div class="lookahead-panel"><div class="lookahead-head"><div><b>🔮 คิวล่วงหน้า</b><small>Round‑Robin Mixer: ลดกลุ่มเดิม คู่เดิม และคนเดิมเจอบ่อย</small></div><button id="rebuildPlanBtn" class="soft-btn">จัดคิวใหม่</button></div><div id="lookaheadList" class="lookahead-list"></div></div>
             <div id="todayQueue" class="queue-list"></div>
           </section>
 
@@ -329,13 +323,6 @@
   <div class="modal-card">
     <div class="modal-head"><h3 id="memberModalTitle">เพิ่มผู้เล่น</h3><button class="modal-close">×</button></div>
     <label>ชื่อผู้เล่น<input id="memberNameInput" placeholder="เช่น K'T"></label>
-    <label>Level
-      <select id="memberLvSelect">
-        <option value="1">Lv.1</option>
-        <option value="2" selected>Lv.2</option>
-        <option value="3">Lv.3</option>
-      </select>
-    </label>
     <button id="saveMemberBtn" class="primary wide">บันทึก</button>
   </div>
 </div>
@@ -347,15 +334,6 @@
     <div class="modal-head"><h3 id="quickEditTitle">แก้ไขผู้เล่น</h3><button class="modal-close">×</button></div>
     <div id="quickNameBlock">
       <label>ชื่อผู้เล่น<input id="quickNameInput"></label>
-    </div>
-    <div id="quickLevelBlock">
-      <label>Level
-        <select id="quickLvSelect">
-          <option value="1">Lv.1</option>
-          <option value="2">Lv.2</option>
-          <option value="3">Lv.3</option>
-        </select>
-      </label>
     </div>
     <button id="saveQuickEditBtn" class="primary wide">บันทึก</button>
   </div>

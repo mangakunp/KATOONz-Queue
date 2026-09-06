@@ -1,23 +1,42 @@
-KATOONz x TOMO Queue Manager v5.9.6 — Stable Responsive OFFLINE
+KATOONz x TOMO Queue Manager v5.9.8 — NO LEVEL OFFLINE
 
-แก้ปัญหาความหน่วง/รวน:
-- ตัดระบบเลือก Display Mode (Auto / Smartphone / Tablet-iPad) ออกทั้งหมด
-- ตัด iPad Dashboard ที่ render หน้าจอซ้ำออก
-- เหลือ UI ชุดเดียว ใช้ CSS Responsive ปรับตามขนาดจออัตโนมัติ
-- ลดการ render ซ้ำของสนาม/คิวบน iPad
-- Timer เกมยังอัปเดตแบบ real-time ทุก 1 วินาทีเฉพาะหน้าสนามชุดเดียว
+ฐานพัฒนา:
+- ต่อโดยตรงจาก v5.9.7 ReadableRows_FontSize_Offline
 
-การแสดงผล:
-- จอใหญ่ / iPad แนวนอน: Sidebar คงที่ + สนาม 2 คอลัมน์
-- iPad แนวตั้ง / จอไม่เกิน 900px: Sidebar เป็นเมนู ☰
-- Smartphone: สนาม 1 คอลัมน์ และ layout กระชับอัตโนมัติ
+สิ่งที่เอาออก:
+- ระบบ Lv.1 / Lv.2 / Lv.3
+- ตัวกรอง Level
+- จุดสี Level
+- Badge Level
+- ปุ่ม “ปรับ Lv.”
+- ช่อง Level ตอนเพิ่มผู้เล่น
+- Level ในคิว สนาม และหน้าต่างเปลี่ยนผู้เล่น
+- Level ในข้อมูลสมาชิกใหม่/การบันทึกประวัติใหม่
 
-ระบบเดิมยังอยู่:
-- Custom Pairing Rules แท็บแยก
-- Absolute Rules 4 แบบ
-- Round-Robin Mixer / Lookahead Queue
-- Game Time Tracking / ETA
-- Dark Purple / Neon UI
-- ค่าใช้จ่าย / QR
-- Backup / Restore
-- Offline-first
+ข้อมูลเดิม:
+- เปิดข้อมูล Local Storage จาก v5.9.7 ต่อได้
+- รายชื่อ / เกม / คิว / สนาม / ประวัติ / Pairing Rules ยังอยู่
+- ค่า Level เก่าของสมาชิกจะถูกละทิ้งอัตโนมัติเมื่อแอปบันทึกข้อมูลรอบถัดไป
+- ประวัติย้อนหลังเก่าที่เคยมี field lv ยังอ่านได้ แต่ UI ไม่แสดง Level
+
+ระบบจาก v5.9.7 ที่เก็บไว้:
+- Offline-first / PWA
+- Readable Rows
+- ปรับขนาดตัวอักษร เล็ก / กลาง / ใหญ่
+- Smart Rotation + Round-Robin Mixer
+- คิวล่วงหน้า
+- Custom Pairing Rules
+- เรียก → เล่น → จบเกม
+- สลับผู้เล่น
+- Timer สนาม
+- ประวัติรายวัน / รายสัปดาห์
+- ค่าใช้จ่าย + QR รับเงิน
+- Backup / Restore JSON
+
+ระบบจัดคิว:
+- ไม่มีข้อมูลระดับมือมาเกี่ยวข้องอีกต่อไป
+- เน้นเวลารอ
+- ลดกลุ่ม 4 คนเดิม
+- ลดคู่เดิม
+- ลดการเจอคนเดิมบ่อย
+- Custom Pairing Rules ยังคงบังคับใช้ตามที่ตั้งไว้

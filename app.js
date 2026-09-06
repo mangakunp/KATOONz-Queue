@@ -3,10 +3,8 @@ const $=s=>document.querySelector(s);
 const $$=s=>Array.from(document.querySelectorAll(s));
 
 function seedMembers(){
-  return [
-    ["K'T",3],["NT",2],["TE'",3],["BG",1],["FM",3],["WP",2],
-    ["JN",1],["CP",3],["ND",2],["OLF",2],["TE",3],["DM",2]
-  ].map((x,i)=>({id:i+1,name:x[0],lv:x[1]}));
+  return ["K'T","NT","TE'","BG","FM","WP","JN","CP","ND","OLF","TE","DM"]
+    .map((name,i)=>({id:i+1,name}));
 }
 function defaultState(){
   return {
@@ -125,10 +123,8 @@ function normalizeState(){
   }).filter(p=>p.memberId>0);
 
   state.members=state.members.map((m,i)=>({
-    ...m,
     id:Number(m?.id)||i+1,
-    name:String(m?.name||("ผู้เล่น "+(i+1))),
-    lv:[1,2,3].includes(Number(m?.lv))?Number(m.lv):2
+    name:String(m?.name||("ผู้เล่น "+(i+1)))
   }));
 
   // ถ้าสถานะ today ไม่ตรงกับสนามหลัง migration ให้ sync จากสนาม
@@ -154,7 +150,6 @@ function archiveSnapshot(){
     return {
       memberId:p.memberId,
       name:m?.name||("ID "+p.memberId),
-      lv:m?.lv||0,
       games:Number(p.games)||0,
       joinedAt:p.joinedAt||null
     };
@@ -236,7 +231,6 @@ function openMemberModal(id=null){
   const m=id?member(id):null;
   $("#memberModalTitle").textContent=id?"แก้ไขผู้เล่น":"เพิ่มผู้เล่น";
   $("#memberNameInput").value=m?.name||"";
-  $("#memberLvSelect").value=String(m?.lv||2);
   $("#memberModal").classList.remove("hidden");
 }
 function closeModals(){$$(".modal").forEach(m=>m.classList.add("hidden"))}
@@ -246,9 +240,9 @@ $("#saveMemberBtn").onclick=()=>{
   const name=$("#memberNameInput").value.trim();
   if(!name)return alert("กรุณาใส่ชื่อผู้เล่น");
   if(memberEditId){
-    const m=member(memberEditId);m.name=name;m.lv=+$("#memberLvSelect").value;
+    const m=member(memberEditId);m.name=name;
   }else{
-    state.members.push({id:nextMemberId(),name,lv:+$("#memberLvSelect").value});
+    state.members.push({id:nextMemberId(),name});
   }
   save();closeModals();render();
 };
@@ -256,36 +250,23 @@ function deleteMember(id){
   if(todayPlayer(id))return alert("ผู้เล่นนี้อยู่ในรายชื่อวันนี้ กรุณานำออกจากวันนี้ก่อน");
   if(confirm("ลบผู้เล่นนี้ออกจากรายชื่อทั้งหมด?")){state.members=state.members.filter(m=>m.id!==id);save();render()}
 }
-let quickEdit={id:null,mode:null};
-function openQuickEdit(id,mode){
+let quickEdit={id:null};
+function openQuickEdit(id){
   const m=member(id);if(!m)return;
-  quickEdit={id,mode};
-  $("#quickEditTitle").textContent=mode==="name"?"แก้ชื่อผู้เล่น":"ปรับ Level";
-  $("#quickNameBlock").style.display=mode==="name"?"block":"none";
-  $("#quickLevelBlock").style.display=mode==="level"?"block":"none";
+  quickEdit={id};
+  $("#quickEditTitle").textContent="แก้ชื่อผู้เล่น";
+  $("#quickNameBlock").style.display="block";
   $("#quickNameInput").value=m.name;
-  $("#quickLvSelect").value=String(m.lv);
   $("#quickEditModal").classList.remove("hidden");
 }
 $("#saveQuickEditBtn").onclick=()=>{
   const m=member(quickEdit.id);if(!m)return;
-  if(quickEdit.mode==="name"){
-    const name=$("#quickNameInput").value.trim();
-    if(!name)return alert("กรุณาใส่ชื่อ");
-    m.name=name;
-  }else{
-    m.lv=+$("#quickLvSelect").value;
-  }
+  const name=$("#quickNameInput").value.trim();
+  if(!name)return alert("กรุณาใส่ชื่อ");
+  m.name=name;
   save();closeModals();render();
 };
-function quickLevel(id){openQuickEdit(id,"level")}
 
-function ensureToday(memberId){
-  if(todayPlayer(memberId))return false;
-  const now=Date.now();
-  state.today.push({memberId,joinedAt:now,waitStart:now,status:"waiting",games:0,queuePos:nextQueue()});
-  return true;
-}
 function addToday(memberId){
   const added=ensureToday(memberId);
   if(added){state.plan.items=[];save();render();}
@@ -474,7 +455,7 @@ function renderLookahead(){
           <div class="lookahead-no">${i+1}</div>
           <div>
             <div class="lookahead-names">${names.map(esc).join(" · ")}</div>
-            <div class="round-robin-note">ไม่ใช้ Level · ลดกลุ่มซ้ำ · ลดคู่ซ้ำ · ลดคนเดิมเจอบ่อย</div>
+            <div class="round-robin-note">ลดกลุ่มซ้ำ · ลดคู่ซ้ำ · ลดคนเดิมเจอบ่อย</div>
           </div>
           <div class="lookahead-status">ถัดไป</div>
         </div>`;
@@ -639,7 +620,7 @@ function openReplace(courtId,slot){
   html+=waiting.length?waiting.map(p=>{
     const m=member(p.memberId);
     return `<button class="replace-choice" data-type="waiting" data-mid="${p.memberId}">
-      <b>${esc(m?.name)}</b> · Lv.${m?.lv} · รอ ${waitingMinutes(p)} นาที
+      <b>${esc(m?.name)}</b> · รอ ${waitingMinutes(p)} นาที
     </button>`;
   }).join(""):'<div class="empty-state">ไม่มีคนรอ</div>';
 
@@ -654,7 +635,7 @@ function openReplace(courtId,slot){
     html+=others.length?others.map(o=>{
       const m=member(o.mid);
       return `<button class="replace-choice other-court" data-type="court" data-mid="${o.mid}" data-cid="${o.courtId}" data-slot="${o.slot}">
-        <b>${esc(m?.name)}</b> · สนาม ${esc(o.courtName)} · Lv.${m?.lv}
+        <b>${esc(m?.name)}</b> · สนาม ${esc(o.courtName)}
       </button>`;
     }).join(""):'<div class="empty-state">ไม่มีสนามอื่นที่อยู่สถานะ “เรียกแล้ว”</div>';
   }
@@ -774,7 +755,6 @@ $("#restoreFile").onchange=e=>{
 };
 
 $("#playerSearch").oninput=renderMembers;
-$("#levelFilter").onchange=renderMembers;
 
 
 function ruleLabel(type){
@@ -891,27 +871,24 @@ function renderPairRules(){
 }
 
 function renderMembers(){
-  const q=$("#playerSearch").value.trim().toLowerCase(),lv=$("#levelFilter").value;
-  const list=state.members.filter(m=>(!q||m.name.toLowerCase().includes(q))&&(lv==="all"||String(m.lv)===lv));
+  const q=$("#playerSearch").value.trim().toLowerCase();
+  const list=state.members.filter(m=>!q||m.name.toLowerCase().includes(q));
   $("#memberList").innerHTML=list.length?list.map((m,i)=>{
     const t=todayPlayer(m.id);
     return `<div class="member-row">
       <div class="member-no">${i+1}</div>
-      <div class="member-main"><div class="member-level-dot-wrap"><span class="level-dot lv${m.lv}"></span><div class="member-name">${esc(m.name)}</div></div><small class="status-today">${t?"● อยู่ในวันนี้แล้ว":""}</small></div>
-      <div class="member-level"><span class="lv-badge lv${m.lv}">Lv.${m.lv}</span></div>
+      <div class="member-main"><div class="member-name">${esc(m.name)}</div><small class="status-today">${t?"● อยู่ในวันนี้แล้ว":""}</small></div>
       <div class="member-presence">${t?'<span class="status-chip status-wait">วันนี้</span>':'<span class="muted">—</span>'}</div>
       <div class="member-actions">
         ${t?`<button class="mini-btn remove-today" data-id="${m.id}">นำออกวันนี้</button>`:`<button class="primary add-today" data-id="${m.id}">เพิ่มวันนี้</button>`}
         <button class="mini-btn edit-member" data-id="${m.id}">แก้ชื่อ</button>
-        <button class="mini-btn edit-lv" data-id="${m.id}">ปรับ Lv.</button>
         <button class="danger-btn delete-member" data-id="${m.id}">ลบ</button>
       </div>
     </div>`
   }).join(""):'<div class="empty-state">ไม่พบรายชื่อผู้เล่น</div>';
   $$(".add-today").forEach(b=>b.onclick=()=>addToday(+b.dataset.id));
   $$(".remove-today").forEach(b=>b.onclick=()=>removeToday(+b.dataset.id));
-  $$(".edit-member").forEach(b=>b.onclick=()=>openQuickEdit(+b.dataset.id,"name"));
-  $$(".edit-lv").forEach(b=>b.onclick=()=>quickLevel(+b.dataset.id));
+  $$(".edit-member").forEach(b=>b.onclick=()=>openQuickEdit(+b.dataset.id));
   $$(".delete-member").forEach(b=>b.onclick=()=>deleteMember(+b.dataset.id));
 }
 function renderQueue(){
@@ -926,7 +903,7 @@ function renderQueue(){
       p.status==="playing"?["เล่น","status-play"]:["พักเอง","status-pause"];
     return `<div class="queue-row">
       <div class="queue-pos">#${i+1}${p.status==="waiting"&&i<4?'<br><span class="smart-badge">คิวถัดไป</span>':""}</div>
-      <div class="member-level-dot-wrap"><span class="level-dot lv${m?.lv}"></span><b>${esc(m?.name)}</b> <span class="lv-badge lv${m?.lv}">Lv.${m?.lv}</span></div>
+      <div class="queue-player-name"><b>${esc(m?.name)}</b></div>
       <div class="queue-time">มา ${formatTime(p.joinedAt)}</div>
       <div class="queue-games">🎮 ${p.games}</div>
       <div class="queue-wait">⏱ ${p.status==="waiting"?waitingMinutes(p):0} นาที</div>
@@ -953,7 +930,7 @@ function renderCourts(){
         ${c.slots.map((mid,idx)=>{
           const m=mid?member(mid):null;
           return `<button class="court-slot ${mid?"filled":""}" data-cid="${c.id}" data-slot="${idx}">
-            ${m?`<div><b>${esc(m.name)}</b><small>Lv.${m.lv} · แตะเพื่อเปลี่ยน</small></div>`:'ว่าง'}
+            ${m?`<div><b>${esc(m.name)}</b><small>แตะเพื่อเปลี่ยน</small></div>`:'ว่าง'}
           </button>`
         }).join("")}
       </div>
