@@ -267,6 +267,20 @@ $("#saveQuickEditBtn").onclick=()=>{
   save();closeModals();render();
 };
 
+function ensureToday(memberId){
+  if(todayPlayer(memberId))return false;
+  const now=Date.now();
+  state.today.push({
+    memberId,
+    joinedAt:now,
+    waitStart:now,
+    status:"waiting",
+    games:0,
+    queuePos:nextQueue()
+  });
+  return true;
+}
+
 function addToday(memberId){
   const added=ensureToday(memberId);
   if(added){state.plan.items=[];save();render();}
