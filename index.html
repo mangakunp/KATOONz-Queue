@@ -4,14 +4,13 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#8ccfc4">
-  <meta name="color-scheme" content="light">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="KATOONz Queue">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css">
-  <title>KATOONz x TOMO Queue Manager v5.6.1</title>
+  <title>KATOONz x TOMO Queue Manager v5.9.7</title>
 </head>
 <body>
 <div class="app-shell">
@@ -20,7 +19,7 @@
       <div class="brand-icon">🏸</div>
       <div>
         <b>KATOONz x TOMO</b>
-        <small>Queue Manager · v5.0</small>
+        <small>Queue Manager · v5.9.7</small>
       </div>
     </div>
 
@@ -29,18 +28,21 @@
         <span class="nav-icon">👥</span>
         <span><b>1 รายชื่อผู้เล่น</b><small>สมาชิกทั้งหมด</small></span>
       </button>
+      <button class="nav-btn" data-page="rulesPage">
+        <span class="nav-icon">🧩</span>
+        <span><b>2 Custom Pairing Rules</b><small>ตั้งกฎจับคู่แยกภายหลัง</small></span>
+      </button>
       <button class="nav-btn" data-page="todayPage">
         <span class="nav-icon">📅</span>
-        <span><b>2 การเล่นวันนี้</b><small>ผู้เล่น · คิว · สนาม · ลูก</small></span>
+        <span><b>3 การเล่นวันนี้</b><small>ผู้เล่น · คิว · สนาม · ลูก</small></span>
       </button>
       <button class="nav-btn" data-page="costPage">
         <span class="nav-icon">💰</span>
-        <span><b>3 สรุปค่าใช้จ่าย</b><small>หารเท่ากันวันนี้</small></span>
+        <span><b>4 สรุปค่าใช้จ่าย</b><small>หารเท่ากันวันนี้</small></span>
       </button>
     </nav>
-
-    <div class="sidebar-foot">
-      <div class="offline-pill">● OFFLINE-FIRST</div>
+<div class="sidebar-foot">
+<div class="offline-pill">● OFFLINE-FIRST</div>
       <button id="newDayBtn" class="ghost-btn">🔄 เริ่มวันใหม่</button>
       <button id="backupBtn" class="ghost-btn">⬇️ สำรองข้อมูล</button>
       <button id="restoreBtn" class="ghost-btn">⬆️ กู้คืนข้อมูล</button>
@@ -55,13 +57,19 @@
         <h1 id="pageTitle">รายชื่อผู้เล่น (ทั้งหมด)</h1>
         <small id="todayDate"></small>
       </div>
+      <div class="font-size-tools" aria-label="ปรับขนาดตัวอักษร">
+        <span class="font-label">ขนาดอักษร</span>
+        <button id="fontSmBtn" class="font-btn" type="button">A−</button>
+        <button id="fontMdBtn" class="font-btn active" type="button">A</button>
+        <button id="fontLgBtn" class="font-btn" type="button">A＋</button>
+      </div>
       <div class="top-status">
         <span>💾 บันทึกในเครื่อง</span>
       </div>
     </header>
 
     <main>
-      <!-- PAGE 1 -->
+<!-- PAGE 1 -->
       <section id="playersPage" class="page active">
         
         <div class="summary-grid three">
@@ -92,8 +100,44 @@
           <div id="memberList" class="member-list"></div>
         </section>
       </section>
-
+      
       <!-- PAGE 2 -->
+      <section id="rulesPage" class="page">
+        <section class="card rules-page-card">
+          <div class="section-head">
+            <div>
+              <h2>🧩 Custom Pairing Rules</h2>
+              <p>ตั้งกฎแยกทีหลังได้ เหมาะเวลามีคนมาช้า หรือบางคนไม่มา · ทุกกฎเป็นกฎบังคับ ไม่มีระดับ Soft/Strong</p>
+            </div>
+            <label class="switch-row">
+              <input id="pairRulesEnabled" type="checkbox">
+              <span>เปิดใช้กฎ</span>
+            </label>
+          </div>
+
+          <div class="queue-note">
+            กฎทั้งหมดบังคับใช้จริง: <b>คู่กันตลอดไม่แยกเล่น</b> · <b>คู่กันถ้าได้เล่นเกมเดียวกัน</b> · <b>ไม่เล่นในเกมเดียวกัน</b> · <b>อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน</b>
+          </div>
+
+          <div class="rules-toolbar">
+            <select id="ruleType">
+              <option value="always_partner">🔒 คู่กันตลอดไม่แยกเล่น</option>
+              <option value="prefer_partner">💜 คู่กันถ้าได้เล่นเกมเดียวกัน</option>
+              <option value="avoid_game">⛔ ไม่เล่นในเกมเดียวกัน</option>
+              <option value="avoid_partner">↔ อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน</option>
+            </select>
+            <select id="rulePlayerA"></select>
+            <span class="rule-arrow">↔</span>
+            <select id="rulePlayerB"></select>
+            <button id="addRuleBtn" class="primary">＋ เพิ่มกฎ</button>
+          </div>
+
+          <div id="rulesList" class="rules-list"></div>
+          <div id="ruleConflictBox" class="rule-conflict hidden"></div>
+        </section>
+      </section>
+
+      <!-- PAGE 3 -->
       <section id="todayPage" class="page">
         <div class="summary-grid four">
           <div class="summary-card mint"><span>มาวันนี้</span><strong id="todayCount">0</strong><small>คน</small></div>
@@ -115,7 +159,7 @@
             <div class="queue-note">
       🤖 Smart Rotation แบบ Offline — เลือก 4 คนที่รอนานที่สุดก่อนเสมอ
       จากนั้นค่อยจัดคู่โดยลด “คู่เดิม” และ “คนที่เพิ่งเจอกัน” โดยไม่ใช้ Level
-    </div><div class="lookahead-panel"><div class="lookahead-head"><div><b>🔮 คิวล่วงหน้า</b><small>เตรียม 5 กลุ่มถัดไป ลดคนเดิมลงติดและลดกลุ่มซ้ำ</small></div><button id="rebuildPlanBtn" class="soft-btn">จัดคิวใหม่</button></div><div id="lookaheadList" class="lookahead-list"></div></div>
+    </div><div class="lookahead-panel"><div class="lookahead-head"><div><b>🔮 คิวล่วงหน้า</b><small>Round‑Robin Mixer: ลดกลุ่มเดิม คู่เดิม และคนเดิมเจอบ่อย โดยไม่ใช้ Level</small></div><button id="rebuildPlanBtn" class="soft-btn">จัดคิวใหม่</button></div><div id="lookaheadList" class="lookahead-list"></div></div>
             <div id="todayQueue" class="queue-list"></div>
           </section>
 
@@ -246,6 +290,13 @@
           
 
 
+
+<section class="card timing-summary-card">
+  <div class="section-head"><div><h2>⏱️ Game Time Tracking</h2>
+  <p>จับเวลาจริงตั้งแต่กด “เล่น” จนถึง “จบเกม” และใช้เวลาจริงประมาณ ETA ของคิว</p></div></div>
+  <div id="timingSummary" class="timing-summary"></div>
+</section>
+
 <section class="card history-card">
             <div class="section-head">
               <div>
@@ -319,6 +370,7 @@
     <div id="replaceChoices" class="replace-choices"></div>
   </div>
 </div>
+
 
 <script src="app.js"></script>
 

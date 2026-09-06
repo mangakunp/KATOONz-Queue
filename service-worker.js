@@ -1,4 +1,4 @@
-const CACHE="katoonz-tomo-v5-6-1-lightthemefix";
+const CACHE="katoonz-tomo-v5-9-7-readable-rows-font";
 const ASSETS=[
   "./",
   "./index.html",
