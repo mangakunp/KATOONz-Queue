@@ -1,42 +1,24 @@
-KATOONz x TOMO Queue Manager v5.9.8 — NO LEVEL OFFLINE
+KATOONz x TOMO Queue Manager v5.9.8.1 — ADD PLAYER HOTFIX OFFLINE
 
-ฐานพัฒนา:
-- ต่อโดยตรงจาก v5.9.7 ReadableRows_FontSize_Offline
+แก้ปัญหา:
+- กด “เพิ่มผู้เล่น” แล้วไม่ทำงาน หลังอัปจาก v5.9.7 → v5.9.8
+- สาเหตุหลัก: PWA/Service Worker อาจโหลด index.html ใหม่ แต่ app.js เก่าจาก v5.9.7
+  ทำให้ JS เก่ายังหา memberLvSelect ซึ่งถูกเอาออกไปแล้ว
 
-สิ่งที่เอาออก:
-- ระบบ Lv.1 / Lv.2 / Lv.3
-- ตัวกรอง Level
-- จุดสี Level
-- Badge Level
-- ปุ่ม “ปรับ Lv.”
-- ช่อง Level ตอนเพิ่มผู้เล่น
-- Level ในคิว สนาม และหน้าต่างเปลี่ยนผู้เล่น
-- Level ในข้อมูลสมาชิกใหม่/การบันทึกประวัติใหม่
+สิ่งที่แก้:
+1. app.js / style.css ใช้ version query เพื่อ Cache Bust
+2. Service Worker เปลี่ยน core files เป็น Network-first ตอนออนไลน์
+3. เพิ่ม compatibility Level fields แบบซ่อน 100% เผื่อ app.js เก่าค้างอยู่
+4. UI ยังคง “ไม่มี Level” เหมือน v5.9.8
+5. Offline-first, Readable Rows, Font Size, Queue, Rules, Timer, History,
+   Cost, QR, Backup/Restore ยังอยู่ครบ
 
-ข้อมูลเดิม:
-- เปิดข้อมูล Local Storage จาก v5.9.7 ต่อได้
-- รายชื่อ / เกม / คิว / สนาม / ประวัติ / Pairing Rules ยังอยู่
-- ค่า Level เก่าของสมาชิกจะถูกละทิ้งอัตโนมัติเมื่อแอปบันทึกข้อมูลรอบถัดไป
-- ประวัติย้อนหลังเก่าที่เคยมี field lv ยังอ่านได้ แต่ UI ไม่แสดง Level
-
-ระบบจาก v5.9.7 ที่เก็บไว้:
-- Offline-first / PWA
-- Readable Rows
-- ปรับขนาดตัวอักษร เล็ก / กลาง / ใหญ่
-- Smart Rotation + Round-Robin Mixer
-- คิวล่วงหน้า
-- Custom Pairing Rules
-- เรียก → เล่น → จบเกม
-- สลับผู้เล่น
-- Timer สนาม
-- ประวัติรายวัน / รายสัปดาห์
-- ค่าใช้จ่าย + QR รับเงิน
-- Backup / Restore JSON
-
-ระบบจัดคิว:
-- ไม่มีข้อมูลระดับมือมาเกี่ยวข้องอีกต่อไป
-- เน้นเวลารอ
-- ลดกลุ่ม 4 คนเดิม
-- ลดคู่เดิม
-- ลดการเจอคนเดิมบ่อย
-- Custom Pairing Rules ยังคงบังคับใช้ตามที่ตั้งไว้
+หลังอัป GitHub:
+1. Upload ไฟล์ทั้งหมดทับของเดิม
+2. Commit changes
+3. เปิดเว็บขณะมีอินเทอร์เน็ต
+4. กด Ctrl+Shift+R หนึ่งครั้งบน PC
+   หรือบน iPad/มือถือ ปิด Web App แล้วเปิด Safari เข้าเว็บใหม่ 1 ครั้ง
+5. ตรวจว่าแสดง v5.9.8.1
+6. ทดลอง “เพิ่มผู้เล่น”
+7. หลังจากนั้นกลับไปใช้งาน Offline ได้

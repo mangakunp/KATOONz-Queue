@@ -1129,3 +1129,20 @@ body.font-lg .queue-player-name{font-size:17px!important}
     min-width:0;
   }
 }
+
+
+/* ===== v5.9.8.1 Add Player / stale-cache compatibility ===== */
+.legacy-level-compat{
+  display:none!important;
+  position:absolute!important;
+  width:0!important;
+  height:0!important;
+  overflow:hidden!important;
+  pointer-events:none!important;
+}
+.member-level,
+.lv-badge,
+.level-dot,
+.edit-lv{
+  display:none!important;
+}
