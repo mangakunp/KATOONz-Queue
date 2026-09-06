@@ -1,9 +1,9 @@
-const CACHE="katoonz-tomo-v5-9-8-2-addtodayfix";
+const CACHE="katoonz-tomo-v5-9-8-3-replacemodaltextfix";
 const ASSETS=[
   "./",
   "./index.html",
-  "./style.css?v=5.9.8.2",
-  "./app.js?v=5.9.8.2",
+  "./style.css?v=5.9.8.3",
+  "./app.js?v=5.9.8.3",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png"

@@ -1,18 +1,18 @@
-KATOONz x TOMO Queue Manager v5.9.8.2 — ADD TODAY FIX OFFLINE
+KATOONz x TOMO Queue Manager v5.9.8.3 — REPLACE MODAL TEXT FIX OFFLINE
 
 แก้ไข:
-- ปุ่ม “เพิ่มวันนี้” กดไม่ได้ใน v5.9.8 / v5.9.8.1
-- สาเหตุ: ฟังก์ชัน ensureToday() ถูกลบโดยไม่ตั้งใจตอนตัดระบบ Level ออก
-- คืน ensureToday() จาก v5.9.7 กลับมา โดยไม่คืนระบบ Level
+- หน้าต่าง “เปลี่ยนผู้เล่นในสนาม”
+- รายการพื้นสีขาวด้านใน ชื่อผู้เล่นซีด/หาย
+- บังคับให้ข้อความในรายการพื้นสีขาวเป็นสีม่วงเข้มทั้งหมด
 
-การทำงานหลังแก้:
-- กด “เพิ่มวันนี้” → ผู้เล่นเข้าคิวรอทันที
-- บันทึก joinedAt / waitStart / queuePos ตามระบบเดิม
-- เคลียร์แผนคิวล่วงหน้าให้ระบบคำนวณใหม่
-- ข้อมูล Local Storage เดิมใช้ต่อได้
+สิ่งที่แก้:
+- คนที่กำลังรอ: ชื่อ + ข้อความรอง เป็นสีม่วงเข้ม
+- สลับกับสนามอื่น: ชื่อ + ข้อความรอง เป็นสีม่วงเข้ม
+- พื้นขาวและพื้นเหลืองยังคงเดิม แต่ตัวอักษรอ่านชัดขึ้น
+- ไม่มีการเปลี่ยน logic การจัดคิวหรือเปลี่ยนตัว
 
-ยังคงไม่มีระบบ Level
-และเก็บฟังก์ชัน v5.9.7 ไว้ครบ:
-Readable Rows, Font Size, Smart Rotation, Round-Robin Mixer,
-Lookahead Queue, Custom Pairing Rules, Court Timer, History,
-Costs, QR, Backup/Restore และ Offline PWA
+รวมของเดิมจาก v5.9.8.2:
+- ไม่มีระบบ Level
+- เพิ่มผู้เล่นได้
+- เพิ่มวันนี้ได้
+- Readable Rows / Font Size / Offline PWA / Smart Rotation / Pairing Rules ครบ

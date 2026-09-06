@@ -1146,3 +1146,31 @@ body.font-lg .queue-player-name{font-size:17px!important}
 .edit-lv{
   display:none!important;
 }
+
+
+/* ===== v5.9.8.3 Replace Modal Text Fix ===== */
+.replace-choice{
+  background:#ffffff !important;
+  color:#3c235d !important;
+  border:1px solid #cdbde8 !important;
+}
+.replace-choice b,
+.replace-choice small,
+.replace-choice span{
+  color:#3c235d !important;
+  opacity:1 !important;
+}
+.replace-choice.other-court{
+  background:#fff8df !important;
+  color:#3c235d !important;
+  border-color:#ead385 !important;
+}
+.replace-group-title{
+  color:#b8a5e9 !important;
+}
+#replacePlayerModal .modal-card{
+  color:#efe9ff !important;
+}
+#replacePlayerModal .empty-state{
+  color:#b8c2d0 !important;
+}
