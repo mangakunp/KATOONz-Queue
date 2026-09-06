@@ -18,10 +18,8 @@ function defaultState(){
     history:[],
     archive:{},
     plan:{items:[]},
-    pairingRules:{enabled:false,items:[]},
     costs:{courtRate:120,courtCount:2,hours:2,shuttleRate:45,other:0,qrData:""},
-    sessionDate:new Date().toISOString().slice(0,10),
-    ui:{fontSize:"md"}
+    sessionDate:new Date().toISOString().slice(0,10)
   };
 }
 let state;
@@ -55,15 +53,9 @@ function normalizeState(){
   if(!state.archive || typeof state.archive!=="object")state.archive={};
   if(!state.plan||typeof state.plan!=="object")state.plan={items:[]};
   if(!Array.isArray(state.plan.items))state.plan.items=[];
-  if(!state.pairingRules||typeof state.pairingRules!=="object")state.pairingRules={enabled:false,items:[]};
-  if(!Array.isArray(state.pairingRules.items))state.pairingRules.items=[];
-  // v5.9.5: ทุกกฎเป็นกฎบังคับ ไม่มีระดับ Soft / Strong / Absolute
-  state.pairingRules.items=state.pairingRules.items.map(r=>({id:r.id||Date.now()+Math.random(),type:r.type,a:Number(r.a),b:Number(r.b)})).filter(r=>r.a&&r.b&&r.a!==r.b);
   if(!state.costs || typeof state.costs!=="object"){
     state.costs={courtRate:120,courtCount:state.courts.length||2,hours:2,shuttleRate:45,other:0,qrData:""};
   }
-  if(!state.ui || typeof state.ui!=="object")state.ui={fontSize:"md"};
-  if(!["sm","md","lg"].includes(state.ui.fontSize))state.ui.fontSize="md";
 
   if(!Number.isFinite(+state.costs.courtCount))state.costs.courtCount=state.courts.length||2;
   if(!Number.isFinite(+state.costs.courtRate))state.costs.courtRate=120;
@@ -183,9 +175,6 @@ function syncArchive(){
   if(!state.archive || typeof state.archive!=="object")state.archive={};
   if(!state.plan||typeof state.plan!=="object")state.plan={items:[]};
   if(!Array.isArray(state.plan.items))state.plan.items=[];
-  if(!state.pairingRules||typeof state.pairingRules!=="object")state.pairingRules={enabled:false,items:[]};
-  if(!Array.isArray(state.pairingRules.items))state.pairingRules.items=[];
-  state.pairingRules.items=state.pairingRules.items.map(r=>({id:r.id||Date.now()+Math.random(),type:r.type,a:Number(r.a),b:Number(r.b)})).filter(r=>r.a&&r.b&&r.a!==r.b);
   const snap=archiveSnapshot();
   // เก็บแม้ยังไม่มีเกม หากมีผู้เล่นวันนี้ เพื่อไม่ให้ข้อมูลวันนั้นหาย
   if(snap.playerCount>0 || snap.totalGames>0 || snap.shuttleCount>0){
@@ -215,7 +204,7 @@ function currentDateThai(){
 function showPage(id){
   $$(".page").forEach(p=>p.classList.toggle("active",p.id===id));
   $$(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
-  const titles={playersPage:"รายชื่อผู้เล่น (ทั้งหมด)",rulesPage:"Custom Pairing Rules",todayPage:"การเล่นวันนี้",costPage:"สรุปค่าใช้จ่ายวันนี้"};
+  const titles={playersPage:"รายชื่อผู้เล่น (ทั้งหมด)",todayPage:"การเล่นวันนี้",costPage:"สรุปค่าใช้จ่ายวันนี้"};
   $("#pageTitle").textContent=titles[id]||"KATOONz Queue";
   if(window.innerWidth<=900)$("#sidebar").classList.remove("open");
   localStorage.setItem("katoonz_v5_page",id);
@@ -280,17 +269,12 @@ $("#saveQuickEditBtn").onclick=()=>{
 };
 function quickLevel(id){openQuickEdit(id,"level")}
 
-function ensureToday(memberId){
-  if(todayPlayer(memberId))return false;
+function addToday(memberId){
+  if(todayPlayer(memberId))return;
   const now=Date.now();
   state.today.push({memberId,joinedAt:now,waitStart:now,status:"waiting",games:0,queuePos:nextQueue()});
-  return true;
+  state.plan.items=[];save();render();
 }
-function addToday(memberId){
-  const added=ensureToday(memberId);
-  if(added){state.plan.items=[];save();render();}
-}
-
 function removeToday(memberId){
   const p=todayPlayer(memberId);
   if(!p)return;
@@ -336,167 +320,69 @@ function deleteCourt(id){
 }
 function renameCourt(id,val){const c=state.courts.find(c=>c.id===id);if(c){c.name=val.trim()||String(id);save()}}
 
-
 function groupKey(ids){return ids.slice().sort((a,b)=>a-b).join("-")}
-function rrPairKey(a,b){return [a,b].sort((x,y)=>x-y).join("-")}
-
-function rrHistory(){
-  const group={}, meet={}, partner={}, opponent={};
-  state.history.forEach(h=>{
-    const s=(h.slots||[]).filter(Boolean);
-    if(s.length!==4)return;
-
-    group[groupKey(s)]=(group[groupKey(s)]||0)+1;
-
-    for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
-      const k=rrPairKey(s[i],s[j]);
-      meet[k]=(meet[k]||0)+1;
-    }
-
-    [[s[0],s[1]],[s[2],s[3]]].forEach(([a,b])=>{
-      const k=rrPairKey(a,b); partner[k]=(partner[k]||0)+1;
-    });
-
-    [[s[0],s[2]],[s[0],s[3]],[s[1],s[2]],[s[1],s[3]]].forEach(([a,b])=>{
-      const k=rrPairKey(a,b); opponent[k]=(opponent[k]||0)+1;
-    });
-  });
-  return {group,meet,partner,opponent};
-}
-
-function rrBestPairing(ids, hist, virtualPartner, virtualOpponent){
-  const opts=[
-    [ids[0],ids[1],ids[2],ids[3]],
-    [ids[0],ids[2],ids[1],ids[3]],
-    [ids[0],ids[3],ids[1],ids[2]]
-  ];
-  let best=null, bestScore=Infinity;
-  opts.forEach(z=>{
-    if(!rulePairingAllowed(z))return;
-    const p1=rrPairKey(z[0],z[1]), p2=rrPairKey(z[2],z[3]);
-    const opp=[
-      rrPairKey(z[0],z[2]),rrPairKey(z[0],z[3]),
-      rrPairKey(z[1],z[2]),rrPairKey(z[1],z[3])
-    ];
-    const s=
-      ((hist.partner[p1]||0)+(hist.partner[p2]||0)+(virtualPartner[p1]||0)+(virtualPartner[p2]||0))*60 +
-      opp.reduce((n,k)=>n+(hist.opponent[k]||0)+(virtualOpponent[k]||0),0)*12;
-    if(s<bestScore){bestScore=s;best=z}
-  });
-  return best;
-}
-
-function generatePlan(){
-  const hist=rrHistory();
-  const plans=[];
-  let virtual=waitingQueue().map(p=>({...p}));
-  const vGroup={}, vMeet={}, vPartner={}, vOpponent={}, vUse={};
-
-  for(let round=0; round<5 && virtual.length>=4; round++){
-    const pool=virtual.slice(0,Math.min(12,virtual.length));
-    let best=null,bestScore=Infinity;
-
-    for(let a=0;a<pool.length;a++)
-    for(let b=a+1;b<pool.length;b++)
-    for(let c=b+1;c<pool.length;c++)
-    for(let d=c+1;d<pool.length;d++){
-      const four=[pool[a],pool[b],pool[c],pool[d]];
-      const ids=four.map(x=>x.memberId);
-      if(!ruleGroupAllowed(ids))continue;
-
-      let score=(a+b+c+d)*18;
-      score+=((hist.group[groupKey(ids)]||0)+(vGroup[groupKey(ids)]||0))*180;
-      score+=rulePenaltyForGroup(ids);
-      score+=ids.reduce((n,id)=>n+(vUse[id]||0),0)*35;
-
-      for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
-        const k=rrPairKey(ids[i],ids[j]);
-        score+=((hist.meet[k]||0)+(vMeet[k]||0))*18;
+function recentMeetPenalty(ids){
+  let score=0;
+  const recent=state.history.slice(0,10);
+  for(let x=0;x<ids.length;x++)for(let y=x+1;y<ids.length;y++){
+    const k=pairKey(ids[x],ids[y]);
+    recent.forEach((h,i)=>{
+      const s=h.slots||[];
+      for(let a=0;a<s.length;a++)for(let b=a+1;b<s.length;b++){
+        if(pairKey(s[a],s[b])===k)score+=10-i;
       }
-
+    });
+  }
+  return score;
+}
+function groupRepeat(ids){
+  const k=groupKey(ids);
+  return state.history.reduce((n,h)=>{
+    const s=(h.slots||[]).filter(Boolean);
+    return n+(s.length===4&&groupKey(s)===k?1:0)
+  },0);
+}
+function generatePlan(){
+  const base=waitingQueue().map(p=>({...p}));
+  const plans=[], virtual=[...base];
+  for(let round=0;round<5 && virtual.length>=4;round++){
+    const pool=virtual.slice(0,Math.min(9,virtual.length));
+    let best=null,bestScore=1e9;
+    for(let a=0;a<pool.length;a++)for(let b=a+1;b<pool.length;b++)for(let c=b+1;c<pool.length;c++)for(let d=c+1;d<pool.length;d++){
+      const four=[pool[a],pool[b],pool[c],pool[d]], ids=four.map(x=>x.memberId);
+      const waitPenalty=(a+b+c+d)*15;
+      const score=waitPenalty+groupRepeat(ids)*100+recentMeetPenalty(ids)*4;
       if(score<bestScore){bestScore=score;best=four}
     }
-
     if(!best)break;
-
     const ids=best.map(x=>x.memberId);
-    const paired=rrBestPairing(ids,hist,vPartner,vOpponent);
-    if(!paired)break;
-    plans.push({ids,paired});
-
-    vGroup[groupKey(ids)]=(vGroup[groupKey(ids)]||0)+1;
-    ids.forEach(id=>vUse[id]=(vUse[id]||0)+1);
-
-    for(let i=0;i<4;i++)for(let j=i+1;j<4;j++){
-      const k=rrPairKey(ids[i],ids[j]);
-      vMeet[k]=(vMeet[k]||0)+1;
-    }
-
-    [[paired[0],paired[1]],[paired[2],paired[3]]].forEach(([a,b])=>{
-      const k=rrPairKey(a,b); vPartner[k]=(vPartner[k]||0)+1;
-    });
-
-    [[paired[0],paired[2]],[paired[0],paired[3]],[paired[1],paired[2]],[paired[1],paired[3]]].forEach(([a,b])=>{
-      const k=rrPairKey(a,b); vOpponent[k]=(vOpponent[k]||0)+1;
-    });
-
+    plans.push({ids,paired:pairFour(best)});
     const used=new Set(ids);
     const remain=virtual.filter(p=>!used.has(p.memberId));
-    let qmax=remain.reduce((m,p)=>Math.max(m,+p.queuePos||0),0);
-    best.forEach(p=>remain.push({...p,queuePos:++qmax}));
-    virtual=remain;
+    best.forEach(p=>remain.push({...p,queuePos:(remain.at(-1)?.queuePos||0)+1}));
+    virtual.splice(0,virtual.length,...remain);
   }
-
-  state.plan.items=plans;
-  save();
-  return plans;
+  state.plan.items=plans; save(); return plans;
 }
-
 function nextPlanned(){
   if(!state.plan.items.length)generatePlan();
   while(state.plan.items.length){
     const item=state.plan.items.shift();
-    if(item.ids.every(id=>todayPlayer(id)?.status==="waiting")){
-      return item.ids.map(id=>todayPlayer(id));
-    }
+    const ok=item.ids.every(id=>todayPlayer(id)?.status==="waiting");
+    if(ok)return item.ids.map(id=>todayPlayer(id));
   }
   return null;
 }
-
 function renderLookahead(){
-  const box=$("#lookaheadList");
-  if(!box)return;
+  const box=$("#lookaheadList"); if(!box)return;
   if(!state.plan.items.length)generatePlan();
-  box.innerHTML=state.plan.items.length
-    ? state.plan.items.slice(0,5).map((it,i)=>{
-        const names=it.ids.map(id=>member(id)?.name||("ID "+id));
-        return `<div class="lookahead-item">
-          <div class="lookahead-no">${i+1}</div>
-          <div>
-            <div class="lookahead-names">${names.map(esc).join(" · ")}</div>
-            <div class="round-robin-note">ไม่ใช้ Level · ลดกลุ่มซ้ำ · ลดคู่ซ้ำ · ลดคนเดิมเจอบ่อย</div>
-          </div>
-          <div class="lookahead-status">ถัดไป</div>
-        </div>`;
-      }).join("")
-    : '<div class="empty-state">ยังวางคิวล่วงหน้าไม่ได้</div>';
+  box.innerHTML=state.plan.items.length?state.plan.items.slice(0,5).map((it,i)=>{
+    const names=it.ids.map(id=>member(id)?.name||("ID "+id));
+    return `<div class="lookahead-item"><div class="lookahead-no">${i+1}</div><div class="lookahead-names">${names.map(esc).join(" · ")}</div><div class="lookahead-status">ถัดไป</div></div>`;
+  }).join(""):'<div class="empty-state">ยังวางคิวล่วงหน้าไม่ได้</div>';
 }
 
-function chooseNextFour(){
-  const p=nextPlanned();
-  if(p&&p.length===4)return p;
-  const q=waitingQueue();
-  if(q.length<4)return null;
-  if(!state.pairingRules?.enabled)return q.slice(0,4);
-  const pool=q.slice(0,Math.min(12,q.length));
-  for(let a=0;a<pool.length;a++)for(let b=a+1;b<pool.length;b++)for(let c=b+1;c<pool.length;c++)for(let d=c+1;d<pool.length;d++){
-    const four=[pool[a],pool[b],pool[c],pool[d]];
-    const ids=four.map(x=>x.memberId);
-    if(ruleGroupAllowed(ids) && rrBestPairing(ids,rrHistory(),{},{}))return four;
-  }
-  return null;
-}
-
+function chooseNextFour(){const p=nextPlanned();if(p&&p.length===4)return p;const q=waitingQueue();return q.length>=4?q.slice(0,4):null;}
 function pairKey(a,b){
   return [a,b].sort((x,y)=>x-y).join("-");
 }
@@ -561,8 +447,28 @@ function scorePairing(z,stats){
 }
 
 function pairFour(players){
-  const ids=players.map(p=>p.memberId);
-  return rrBestPairing(ids,rrHistory(),{},{});
+  // ผู้เล่น 4 คนถูกเลือกจาก "คนรอนานที่สุด" มาแล้ว
+  // ตรงนี้ไม่ใช้ Level และไม่เปลี่ยนว่าใครได้ลง
+  const mids=players.map(p=>p.memberId);
+
+  const pairings=[
+    [mids[0],mids[1],mids[2],mids[3]],
+    [mids[0],mids[2],mids[1],mids[3]],
+    [mids[0],mids[3],mids[1],mids[2]]
+  ];
+
+  const stats=encounterStats();
+
+  pairings.sort((a,b)=>{
+    const sa=scorePairing(a,stats);
+    const sb=scorePairing(b,stats);
+    if(sa!==sb)return sa-sb;
+
+    // ถ้าคะแนนเท่ากัน สุ่มเล็กน้อยเพื่อไม่ให้รูปแบบตายตัว
+    return Math.random()-.5;
+  });
+
+  return pairings[0];
 }
 
 function courtDiversityScore(mid,courtName){
@@ -575,9 +481,8 @@ function callCourt(id){
   if(!c)return;
   if(c.state!=="idle"||c.slots.some(Boolean))return alert("สนามนี้มีคิวแล้ว");
   const next=chooseNextFour();
-  if(!next)return alert(state.pairingRules?.enabled?"ยังจัด 4 คนตาม Custom Pairing Rules ไม่ได้ กรุณาตรวจว่าคู่ที่บังคับมาครบหรือมีกฎขัดกัน":"ผู้เล่นที่รอมีไม่ถึง 4 คน");
+  if(!next)return alert("ผู้เล่นที่รอมีไม่ถึง 4 คน");
   let paired=pairFour(next);
-  if(!paired)return alert("Custom Pairing Rules ทำให้จัดฝั่งไม่ได้ กรุณาตรวจสอบกฎ");
 
   // ช่วยให้ผู้เล่นได้หมุนเวียนใช้หลายสนาม โดยไม่เปลี่ยนสิทธิ์ 4 คนที่รอนานสุด
   const left=[paired[0],paired[1]];
@@ -611,11 +516,7 @@ function endCourt(id){
   if(!c||c.state==="idle")return;
   const ids=c.slots.filter(Boolean);
   if(c.state==="playing"&&ids.length){
-    state.history.unshift({time:Date.now(),court:c.name,slots:[...ids],
-    startedAt:c.startedAt||null,
-    endedAt:Date.now(),
-    durationMs:c.startedAt?Date.now()-c.startedAt:0
-  });
+    state.history.unshift({time:Date.now(),court:c.name,slots:[...ids]});
   }
   ids.forEach(mid=>{
     const p=todayPlayer(mid);
@@ -776,120 +677,6 @@ $("#restoreFile").onchange=e=>{
 $("#playerSearch").oninput=renderMembers;
 $("#levelFilter").onchange=renderMembers;
 
-
-function ruleLabel(type){
-  return {
-    always_partner:"🔒 คู่กันตลอดไม่แยกเล่น",
-    prefer_partner:"💜 คู่กันถ้าได้เล่นเกมเดียวกัน",
-    avoid_game:"⛔ ไม่เล่นในเกมเดียวกัน",
-    avoid_partner:"↔ อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน",
-    prefer_game:"✨ อยากอยู่เกมเดียวกัน"
-  }[type]||type;
-}
-
-function samePair(a,b,x,y){
-  return (a===x&&b===y)||(a===y&&b===x);
-}
-function ruleGroupAllowed(ids){
-  if(!state.pairingRules?.enabled)return true;
-  const set=new Set(ids);
-  for(const r of (state.pairingRules.items||[])){
-    const hasA=set.has(r.a),hasB=set.has(r.b),both=hasA&&hasB;
-    if(r.type==="always_partner" && hasA!==hasB)return false; // ต้องลงพร้อมกัน
-    if(r.type==="avoid_game" && both)return false;             // ห้ามอยู่เกมเดียวกัน
-  }
-  return true;
-}
-function rulePairingAllowed(z){
-  if(!state.pairingRules?.enabled)return true;
-  const teammates=[[z[0],z[1]],[z[2],z[3]]];
-  const group=new Set(z);
-  for(const r of (state.pairingRules.items||[])){
-    const both=group.has(r.a)&&group.has(r.b);
-    if(!both)continue;
-    const together=teammates.some(([a,b])=>samePair(a,b,r.a,r.b));
-    if((r.type==="always_partner" || r.type==="prefer_partner") && !together)return false;
-    if(r.type==="avoid_partner" && together)return false; // ถ้าอยู่เกมเดียวกัน ต้องตรงข้าม
-  }
-  return true;
-}
-function rulePenaltyForGroup(ids){
-  return ruleGroupAllowed(ids)?0:Infinity;
-}
-function rulePenaltyForPairing(z){
-  return rulePairingAllowed(z)?0:Infinity;
-}
-
-function validateRules(){
-  const conflicts=[];
-  const items=state.pairingRules?.items||[];
-  items.forEach((a,i)=>{
-    items.slice(i+1).forEach(b=>{
-      if(!samePair(a.a,a.b,b.a,b.b))return;
-      const mustPartner=["always_partner","prefer_partner"];
-      const conflict=
-        (mustPartner.includes(a.type) && ["avoid_partner","avoid_game"].includes(b.type)) ||
-        (mustPartner.includes(b.type) && ["avoid_partner","avoid_game"].includes(a.type)) ||
-        (a.type==="avoid_game" && b.type==="avoid_partner") ||
-        (b.type==="avoid_game" && a.type==="avoid_partner");
-      if(conflict)conflicts.push(`${member(a.a)?.name||a.a} ↔ ${member(a.b)?.name||a.b}`);
-    });
-  });
-  return [...new Set(conflicts)];
-}
-function populateRulePlayers(){
-  const a=$("#rulePlayerA"),b=$("#rulePlayerB");
-  if(!a||!b)return;
-  const opts=state.members.map(m=>`<option value="${m.id}">${esc(m.name)}</option>`).join("");
-  a.innerHTML=opts;b.innerHTML=opts;
-  if(state.members.length>1)b.selectedIndex=1;
-}
-
-function addPairRule(){
-  const type=$("#ruleType").value;
-  const a=+$("#rulePlayerA").value,b=+$("#rulePlayerB").value;
-  if(!a||!b||a===b)return alert("กรุณาเลือกผู้เล่นคนละคน");
-  const dup=state.pairingRules.items.some(r=>r.type===type&&samePair(r.a,r.b,a,b));
-  if(dup)return alert("มีกฎนี้อยู่แล้ว");
-  state.pairingRules.items.push({id:Date.now()+Math.random(),type,a,b});
-  state.pairingRules.enabled=true;
-  state.plan.items=[];
-  save();renderPairRules();renderLookahead();
-}
-
-function deletePairRule(id){
-  state.pairingRules.items=state.pairingRules.items.filter(r=>String(r.id)!==String(id));
-  state.plan.items=[];
-  save();renderPairRules();renderLookahead();
-}
-
-function renderPairRules(){
-  populateRulePlayers();
-  const items=state.pairingRules.items||[];
-  const html=items.length?items.map(r=>`
-    <div class="rule-item">
-      <div class="rule-type">${ruleLabel(r.type)}</div>
-      <div class="rule-person">${esc(member(r.a)?.name||("ID "+r.a))}</div>
-      <div class="rule-arrow">↔</div>
-      <div class="rule-person">${esc(member(r.b)?.name||("ID "+r.b))}</div>
-      <button class="rule-delete" data-id="${r.id}">ลบ</button>
-    </div>
-  `).join(""):'<div class="rule-empty">ยังไม่มีกฎพิเศษ — ไปที่แท็บ Custom Pairing Rules เพื่อเพิ่มกฎได้เลย</div>';
-
-  const list=$("#rulesList"); if(list) list.innerHTML=html;
-  $$(".rule-delete").forEach(b=>b.onclick=()=>deletePairRule(b.dataset.id));
-  const enabled=$("#pairRulesEnabled"); if(enabled) enabled.checked=!!state.pairingRules.enabled;
-
-  const conflicts=validateRules();
-  const box=$("#ruleConflictBox");
-  if(box){
-    if(conflicts.length){
-      box.classList.remove("hidden");
-      box.textContent="⚠️ กฎขัดกัน: "+conflicts.join(", ");
-    }else box.classList.add("hidden");
-  }
-}
-
 function renderMembers(){
   const q=$("#playerSearch").value.trim().toLowerCase(),lv=$("#levelFilter").value;
   const list=state.members.filter(m=>(!q||m.name.toLowerCase().includes(q))&&(lv==="all"||String(m.lv)===lv));
@@ -897,9 +684,9 @@ function renderMembers(){
     const t=todayPlayer(m.id);
     return `<div class="member-row">
       <div class="member-no">${i+1}</div>
-      <div class="member-main"><div class="member-level-dot-wrap"><span class="level-dot lv${m.lv}"></span><div class="member-name">${esc(m.name)}</div></div><small class="status-today">${t?"● อยู่ในวันนี้แล้ว":""}</small></div>
-      <div class="member-level"><span class="lv-badge lv${m.lv}">Lv.${m.lv}</span></div>
-      <div class="member-presence">${t?'<span class="status-chip status-wait">วันนี้</span>':'<span class="muted">—</span>'}</div>
+      <div><div class="member-level-dot-wrap"><span class="level-dot lv${m.lv}"></span><div class="member-name">${esc(m.name)}</div></div><small class="status-today">${t?"● อยู่ในวันนี้แล้ว":""}</small></div>
+      <div><span class="lv-badge lv${m.lv}">Lv.${m.lv}</span></div>
+      <div>${t?'<span class="status-chip status-wait">วันนี้</span>':'<span class="muted">—</span>'}</div>
       <div class="member-actions">
         ${t?`<button class="mini-btn remove-today" data-id="${m.id}">นำออกวันนี้</button>`:`<button class="primary add-today" data-id="${m.id}">เพิ่มวันนี้</button>`}
         <button class="mini-btn edit-member" data-id="${m.id}">แก้ชื่อ</button>
@@ -947,7 +734,6 @@ function renderCourts(){
       <button class="court-delete" data-id="${c.id}">×</button>
       <div class="court-title"><span>สนาม</span><input class="court-name-input" data-id="${c.id}" value="${esc(c.name)}">
         <span class="court-state-badge ${c.state==="idle"?"court-state-idle":c.state==="called"?"court-state-called":"court-state-playing"}">${c.state==="idle"?"ว่าง":c.state==="called"?"เรียกแล้ว":"กำลังเล่น"}</span>
-      ${c.state==="playing"&&c.startedAt?`<div class="game-live-time">⏱ ${fmtDuration(Date.now()-c.startedAt)}</div>`:""}
       </div>
       <div class="court-slots">
         ${c.slots.map((mid,idx)=>{
@@ -1093,71 +879,9 @@ function renderStats(){
   $("#shuttleCount").textContent=state.shuttleCount;
 }
 $("#rebuildPlanBtn")?.addEventListener("click",()=>{state.plan.items=[];generatePlan();render()});
-
-function fmtDuration(ms){
-  ms=Math.max(0,Number(ms)||0);
-  const total=Math.floor(ms/1000), m=Math.floor(total/60), s=total%60;
-  return `${m}:${String(s).padStart(2,"0")}`;
-}
-function fmtClock(ts){
-  if(!ts)return "-";
-  return new Date(ts).toLocaleTimeString("th-TH",{hour:"2-digit",minute:"2-digit"});
-}
-function completedDurations(){
-  return state.history.map(h=>Number(h.durationMs)||0).filter(x=>x>0);
-}
-function avgGameMs(){
-  const d=completedDurations().slice(0,10);
-  if(!d.length)return 15*60*1000;
-  return d.reduce((a,b)=>a+b,0)/d.length;
-}
-function courtRemainingMs(c){
-  if(c.state!=="playing"||!c.startedAt)return 0;
-  return Math.max(0,avgGameMs()-(Date.now()-c.startedAt));
-}
-function estimateQueueEta(index){
-  const playing=state.courts.filter(c=>c.state==="playing"&&c.startedAt);
-  if(!playing.length)return index===0?0:Math.ceil(index/Math.max(1,state.courts.length))*avgGameMs();
-  const lanes=playing.map(c=>courtRemainingMs(c));
-  while(lanes.length<Math.max(1,state.courts.length))lanes.push(0);
-  for(let i=0;i<=index;i++){
-    lanes.sort((a,b)=>a-b);
-    const start=lanes[0];
-    if(i===index)return start;
-    lanes[0]=start+avgGameMs();
-  }
-  return 0;
-}
-function renderTimingSummary(){
-  const box=$("#timingSummary"); if(!box)return;
-  const d=completedDurations();
-  const avg=d.length?d.reduce((a,b)=>a+b,0)/d.length:0;
-  const min=d.length?Math.min(...d):0, max=d.length?Math.max(...d):0;
-  box.innerHTML=[
-    ["เกมวันนี้",`${d.length} เกม`],
-    ["เฉลี่ย",d.length?fmtDuration(avg):"-"],
-    ["สั้นสุด",d.length?fmtDuration(min):"-"],
-    ["นานสุด",d.length?fmtDuration(max):"-"]
-  ].map(([a,b])=>`<div class="timing-stat"><small>${a}</small><strong>${b}</strong></div>`).join("");
-}
-
-
-$("#addRuleBtn")?.addEventListener("click",addPairRule);
-$("#pairRulesEnabled")?.addEventListener("change",e=>{
-  state.pairingRules.enabled=e.target.checked;
-  state.plan.items=[];
-  save();
-  renderPairRules();
-  renderLookahead();
-});
-
-
 function render(){
-  renderMembers();renderPairRules();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();renderTimingSummary();
+  renderMembers();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();
 }
-
-localStorage.removeItem("katoonz_display_mode");
-applyFontSize((state.ui&&state.ui.fontSize)||"md");
 render();
 setInterval(()=>{renderQueue()},60000);
 showPage(localStorage.getItem("katoonz_v5_page")||"playersPage");
@@ -1165,12 +889,3 @@ showPage(localStorage.getItem("katoonz_v5_page")||"playersPage");
 if("serviceWorker" in navigator && location.protocol!=="file:"){
   window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(console.error));
 }
-// v5.8 live clock refresh
-setInterval(()=>{
-  document.querySelectorAll(".court-card").forEach(()=>{});
-  if(state.courts.some(c=>c.state==="playing")){
-    renderCourts();
-    renderQueue();
-  }
-},1000);
-
