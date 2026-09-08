@@ -210,7 +210,7 @@ function currentDateThai(){
 function showPage(id){
   $$(".page").forEach(p=>p.classList.toggle("active",p.id===id));
   $$(".nav-btn").forEach(b=>b.classList.toggle("active",b.dataset.page===id));
-  const titles={playersPage:"รายชื่อผู้เล่น (ทั้งหมด)",rulesPage:"Custom Pairing Rules",todayPage:"การเล่นวันนี้",costPage:"สรุปค่าใช้จ่ายวันนี้"};
+  const titles={playersPage:"รายชื่อผู้เล่น (ทั้งหมด)",rulesPage:"Custom Pairing Rules",todayPage:"การเล่นวันนี้",freePlayPage:"ความถี่การเล่น",costPage:"สรุปค่าใช้จ่ายวันนี้"};
   $("#pageTitle").textContent=titles[id]||"KATOONz Queue";
   if(window.innerWidth<=900)$("#sidebar").classList.remove("open");
   localStorage.setItem("katoonz_v5_page",id);
@@ -769,6 +769,7 @@ $("#restoreFile").onchange=e=>{
 };
 
 $("#playerSearch").oninput=renderMembers;
+$("#freePlaySearch")?.addEventListener("input",renderFreePlay);
 
 
 function ruleLabel(type){
@@ -905,6 +906,87 @@ function renderMembers(){
   $$(".edit-member").forEach(b=>b.onclick=()=>openQuickEdit(+b.dataset.id));
   $$(".delete-member").forEach(b=>b.onclick=()=>deleteMember(+b.dataset.id));
 }
+
+function freePlayIncrement(memberId){
+  // แตะครั้งแรก = มาเล่นวันนี้ + นับเกมแรก
+  let p=todayPlayer(memberId);
+  if(!p){
+    ensureToday(memberId);
+    p=todayPlayer(memberId);
+  }
+  if(!p)return;
+  p.games=(Number(p.games)||0)+1;
+  p.lastFreePlayAt=Date.now();
+  save();
+  render();
+}
+
+function freePlayDecrement(memberId){
+  const p=todayPlayer(memberId);
+  if(!p || (Number(p.games)||0)<=0)return;
+  p.games=Math.max(0,(Number(p.games)||0)-1);
+  p.lastFreePlayAt=Date.now();
+  save();
+  render();
+}
+
+function renderFreePlay(){
+  const box=$("#freePlayList");
+  if(!box)return;
+
+  const q=($("#freePlaySearch")?.value||"").trim().toLowerCase();
+
+  const rows=state.members
+    .filter(m=>!q || m.name.toLowerCase().includes(q))
+    .map(m=>{
+      const p=todayPlayer(m.id);
+      return {
+        member:m,
+        games:Number(p?.games)||0,
+        today:!!p,
+        last:Number(p?.lastFreePlayAt)||0
+      };
+    })
+    .sort((a,b)=>
+      a.games-b.games ||
+      (b.today?1:0)-(a.today?1:0) ||
+      a.member.name.localeCompare(b.member.name,"th")
+    );
+
+  const todayRows=state.today.map(p=>Number(p.games)||0);
+  const min=todayRows.length?Math.min(...todayRows):0;
+  const max=todayRows.length?Math.max(...todayRows):0;
+
+  $("#freePlayTodayCount").textContent=state.today.length;
+  $("#freePlayMin").textContent=min;
+  $("#freePlayMax").textContent=max;
+
+  box.innerHTML=rows.length?rows.map((r,i)=>{
+    const low=r.today && r.games===min;
+    return `<div class="freeplay-row ${low?"is-low":""}">
+      <button class="freeplay-hit" type="button" data-id="${r.member.id}">
+        <span class="freeplay-order">${i+1}</span>
+        <span class="freeplay-person">
+          <b>${esc(r.member.name)}</b>
+          <small>${r.today?"มาเล่นวันนี้แล้ว":"แตะครั้งแรกเพื่อเพิ่มวันนี้"}</small>
+        </span>
+        <span class="freeplay-games">
+          <strong>${r.games}</strong>
+          <small>เกม</small>
+        </span>
+        <span class="freeplay-plus">＋1</span>
+      </button>
+      <button class="freeplay-minus" type="button" data-id="${r.member.id}" ${r.games<=0?"disabled":""}>−1</button>
+    </div>`;
+  }).join(""):'<div class="empty-state">ไม่พบรายชื่อผู้เล่น</div>';
+
+  $$(".freeplay-hit").forEach(b=>b.onclick=()=>freePlayIncrement(+b.dataset.id));
+  $$(".freeplay-minus").forEach(b=>b.onclick=e=>{
+    e.stopPropagation();
+    freePlayDecrement(+b.dataset.id);
+  });
+}
+
 function renderQueue(){
   const sorted=[...state.today].sort((a,b)=>{
     const order={waiting:0,called:1,playing:2,paused:3};
@@ -1144,7 +1226,7 @@ $("#pairRulesEnabled")?.addEventListener("change",e=>{
 
 
 function render(){
-  renderMembers();renderPairRules();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderHistoryArchive();renderTimingSummary();
+  renderMembers();renderPairRules();renderQueue();renderLookahead();renderCourts();renderCosts();renderStats();renderFreePlay();renderHistoryArchive();renderTimingSummary();
 }
 
 localStorage.removeItem("katoonz_display_mode");

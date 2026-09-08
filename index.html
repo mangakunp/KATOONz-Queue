@@ -9,8 +9,8 @@
   <meta name="apple-mobile-web-app-title" content="KATOONz Queue">
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
-  <link rel="stylesheet" href="style.css?v=5.9.8.3">
-  <title>KATOONz x TOMO Queue Manager v5.9.8.3</title>
+  <link rel="stylesheet" href="style.css?v=5.9.9">
+  <title>KATOONz x TOMO Queue Manager v5.9.9</title>
 </head>
 <body>
 <div class="app-shell">
@@ -19,7 +19,7 @@
       <div class="brand-icon">🏸</div>
       <div>
         <b>KATOONz x TOMO</b>
-        <small>Queue Manager · v5.9.8.3</small>
+        <small>Queue Manager · v5.9.9</small>
       </div>
     </div>
 
@@ -36,9 +36,13 @@
         <span class="nav-icon">📅</span>
         <span><b>3 การเล่นวันนี้</b><small>ผู้เล่น · คิว · สนาม · ลูก</small></span>
       </button>
+      <button class="nav-btn" data-page="freePlayPage">
+        <span class="nav-icon">🎯</span>
+        <span><b>4 ความถี่การเล่น</b><small>แตะชื่อ = เพิ่ม 1 เกม</small></span>
+      </button>
       <button class="nav-btn" data-page="costPage">
         <span class="nav-icon">💰</span>
-        <span><b>4 สรุปค่าใช้จ่าย</b><small>หารเท่ากันวันนี้</small></span>
+        <span><b>5 สรุปค่าใช้จ่าย</b><small>หารเท่ากันวันนี้</small></span>
       </button>
     </nav>
 <div class="sidebar-foot">
@@ -185,7 +189,42 @@
         </div>
       </section>
 
-      <!-- PAGE 3 -->
+      <!-- PAGE 4 : FREE PLAY FREQUENCY -->
+      <section id="freePlayPage" class="page">
+        <div class="summary-grid three">
+          <div class="summary-card lavender">
+            <span>มาวันนี้</span><strong id="freePlayTodayCount">0</strong><small>คน</small>
+          </div>
+          <div class="summary-card mint">
+            <span>เล่นน้อยสุด</span><strong id="freePlayMin">0</strong><small>เกม</small>
+          </div>
+          <div class="summary-card cream">
+            <span>เล่นมากสุด</span><strong id="freePlayMax">0</strong><small>เกม</small>
+          </div>
+        </div>
+
+        <section class="card freeplay-card">
+          <div class="section-head">
+            <div>
+              <h2>🎯 โหมดนับเกมอิสระ</h2>
+              <p>ก่อนลงสนาม แตะชื่อของตัวเอง 1 ครั้ง = เพิ่ม 1 เกม · ระบบเรียงคนที่เล่นน้อยสุดไว้ก่อน</p>
+            </div>
+          </div>
+
+          <div class="freeplay-note">
+            🏸 ใช้ในวันที่ไม่ต้องจัดคู่ — ใครอยากลงก็ลงได้ แต่ดูจำนวนเกมเพื่อให้ทุกคนได้เล่นใกล้เคียงกัน
+            <br><b>ตัวเลขใช้ร่วมกับจำนวนเกมใน “การเล่นวันนี้”</b>
+          </div>
+
+          <div class="freeplay-toolbar">
+            <input id="freePlaySearch" placeholder="🔎 ค้นหาชื่อตัวเอง...">
+          </div>
+
+          <div id="freePlayList" class="freeplay-list"></div>
+        </section>
+      </section>
+
+      <!-- PAGE 5 -->
       <section id="costPage" class="page">
         <div class="cost-layout">
           <section class="card">
@@ -360,7 +399,7 @@
 </div>
 
 
-<script src="app.js?v=5.9.8.3"></script>
+<script src="app.js?v=5.9.9"></script>
 
 
 
