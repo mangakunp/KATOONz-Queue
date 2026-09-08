@@ -1,9 +1,9 @@
-const CACHE="katoonz-tomo-v5-9-9-1-freeplaylayout-cleartoday";
+const CACHE="katoonz-tomo-v5-9-9-2-newday-clears-all-members";
 const ASSETS=[
   "./",
   "./index.html",
-  "./style.css?v=5.9.9.1",
-  "./app.js?v=5.9.9.1",
+  "./style.css?v=5.9.9.2",
+  "./app.js?v=5.9.9.2",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png"

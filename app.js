@@ -749,29 +749,29 @@ $("#qrFile").onchange=e=>{
   e.target.value="";
 };
 
-function clearTodaySession(){
+function clearAllMembersForNewDay(){
+  state.members=[];
   state.today=[];
-  state.courts=[{id:1,name:"1",slots:[null,null,null,null],state:"idle"},{id:2,name:"2",slots:[null,null,null,null],state:"idle"}];
+  state.courts=[
+    {id:1,name:"1",slots:[null,null,null,null],state:"idle"},
+    {id:2,name:"2",slots:[null,null,null,null],state:"idle"}
+  ];
   state.shuttleCount=0;
   state.queueCounter=0;
   state.history=[];
   state.plan={items:[]};
+  state.pairingRules={enabled:false,items:[]};
 }
 
 $("#newDayBtn").onclick=()=>{
-  syncArchive();
-  localStorage.setItem(KEY,JSON.stringify(state));
-  if(!confirm("เริ่มวันใหม่? จะล้างรายชื่อผู้เล่นวันนี้ทั้งหมด คิว สนามที่กำลังเล่น จำนวนลูก และประวัติวันนี้ แต่เก็บรายชื่อสมาชิกไว้"))return;
-  clearTodaySession();
+  if(!confirm("เริ่มวันใหม่?\n\nระบบจะลบรายชื่อสมาชิกทั้งหมดออกจากเครื่อง รวมทั้งผู้เล่นวันนี้ คิว สนาม จำนวนลูก และกฎ Pairing\n\nวันใหม่จะเริ่มด้วยรายชื่อว่างทั้งหมด"))return;
+  clearAllMembersForNewDay();
   state.sessionDate=new Date().toISOString().slice(0,10);
-  save();render();
+  save();
+  render();
+  showPage("playersPage");
 };
 
-$("#clearTodayBtn").onclick=()=>{
-  if(!confirm("ล้างรายชื่อทั้งหมดของ 'วันนี้' ใช่ไหม?\nระบบจะล้างผู้เล่นวันนี้ คิว สนาม จำนวนลูก และประวัติวันนี้ แต่จะเก็บรายชื่อสมาชิกไว้"))return;
-  clearTodaySession();
-  save();render();
-};
 $("#backupBtn").onclick=()=>{
   const blob=new Blob([JSON.stringify(state,null,2)],{type:"application/json"});
   const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="KATOONz_v5_backup.json";a.click();URL.revokeObjectURL(a.href)
