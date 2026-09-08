@@ -1,9 +1,9 @@
-const CACHE="katoonz-tomo-v5-9-9-freeplayfrequency";
+const CACHE="katoonz-tomo-v5-9-9-1-freeplaylayout-cleartoday";
 const ASSETS=[
   "./",
   "./index.html",
-  "./style.css?v=5.9.9",
-  "./app.js?v=5.9.9",
+  "./style.css?v=5.9.9.1",
+  "./app.js?v=5.9.9.1",
   "./manifest.webmanifest",
   "./icon-192.png",
   "./icon-512.png"

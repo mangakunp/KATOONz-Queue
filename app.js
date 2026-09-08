@@ -749,13 +749,27 @@ $("#qrFile").onchange=e=>{
   e.target.value="";
 };
 
+function clearTodaySession(){
+  state.today=[];
+  state.courts=[{id:1,name:"1",slots:[null,null,null,null],state:"idle"},{id:2,name:"2",slots:[null,null,null,null],state:"idle"}];
+  state.shuttleCount=0;
+  state.queueCounter=0;
+  state.history=[];
+  state.plan={items:[]};
+}
+
 $("#newDayBtn").onclick=()=>{
   syncArchive();
   localStorage.setItem(KEY,JSON.stringify(state));
-  if(!confirm("เริ่มวันใหม่? จะล้างผู้เล่นวันนี้ คิว สนามที่กำลังเล่น จำนวนลูก และประวัติวันนี้ แต่เก็บรายชื่อสมาชิกไว้"))return;
-  state.today=[];
-  state.courts=[{id:1,name:"1",slots:[null,null,null,null],state:"idle"},{id:2,name:"2",slots:[null,null,null,null],state:"idle"}];
-  state.shuttleCount=0;state.queueCounter=0;state.history=[];state.plan={items:[]};state.sessionDate=new Date().toISOString().slice(0,10);
+  if(!confirm("เริ่มวันใหม่? จะล้างรายชื่อผู้เล่นวันนี้ทั้งหมด คิว สนามที่กำลังเล่น จำนวนลูก และประวัติวันนี้ แต่เก็บรายชื่อสมาชิกไว้"))return;
+  clearTodaySession();
+  state.sessionDate=new Date().toISOString().slice(0,10);
+  save();render();
+};
+
+$("#clearTodayBtn").onclick=()=>{
+  if(!confirm("ล้างรายชื่อทั้งหมดของ 'วันนี้' ใช่ไหม?\nระบบจะล้างผู้เล่นวันนี้ คิว สนาม จำนวนลูก และประวัติวันนี้ แต่จะเก็บรายชื่อสมาชิกไว้"))return;
+  clearTodaySession();
   save();render();
 };
 $("#backupBtn").onclick=()=>{
@@ -964,27 +978,24 @@ function renderFreePlay(){
   box.innerHTML=rows.length?rows.map((r,i)=>{
     const low=r.today && r.games===min;
     return `<div class="freeplay-row ${low?"is-low":""}">
-      <button class="freeplay-hit" type="button" data-id="${r.member.id}">
-        <span class="freeplay-order">${i+1}</span>
-        <span class="freeplay-person">
-          <b>${esc(r.member.name)}</b>
-          <small>${r.today?"มาเล่นวันนี้แล้ว":"แตะครั้งแรกเพื่อเพิ่มวันนี้"}</small>
-        </span>
-        <span class="freeplay-games">
-          <strong>${r.games}</strong>
-          <small>เกม</small>
-        </span>
-        <span class="freeplay-plus">＋1</span>
-      </button>
-      <button class="freeplay-minus" type="button" data-id="${r.member.id}" ${r.games<=0?"disabled":""}>−1</button>
+      <div class="freeplay-order">${i+1}</div>
+      <div class="freeplay-person">
+        <b>${esc(r.member.name)}</b>
+        <small>${r.today?"มาเล่นวันนี้แล้ว":"ยังไม่ได้เพิ่มวันนี้"}</small>
+      </div>
+      <div class="freeplay-controls">
+        <button class="freeplay-minus" type="button" data-id="${r.member.id}" ${r.games<=0?"disabled":""}>−1</button>
+        <button class="freeplay-plus" type="button" data-id="${r.member.id}">+1</button>
+      </div>
+      <div class="freeplay-games">
+        <strong>${r.games}</strong>
+        <small>เกม</small>
+      </div>
     </div>`;
   }).join(""):'<div class="empty-state">ไม่พบรายชื่อผู้เล่น</div>';
 
-  $$(".freeplay-hit").forEach(b=>b.onclick=()=>freePlayIncrement(+b.dataset.id));
-  $$(".freeplay-minus").forEach(b=>b.onclick=e=>{
-    e.stopPropagation();
-    freePlayDecrement(+b.dataset.id);
-  });
+  $$(".freeplay-plus").forEach(b=>b.onclick=()=>freePlayIncrement(+b.dataset.id));
+  $$(".freeplay-minus").forEach(b=>b.onclick=()=>freePlayDecrement(+b.dataset.id));
 }
 
 function renderQueue(){

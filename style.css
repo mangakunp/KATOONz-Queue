@@ -1315,3 +1315,141 @@ body.font-lg .freeplay-games strong{font-size:26px!important}
   .freeplay-games strong{font-size:19px}
   .freeplay-plus{height:31px;font-size:11px}
 }
+
+
+/* ===== v5.9.9.1 Free Play layout + Clear Today ===== */
+.ghost-btn.danger-lite{
+  border-color:#5a3042!important;
+  color:#ffd6e6!important;
+  background:linear-gradient(180deg,#2f1e29,#241923)!important;
+}
+
+.freeplay-row{
+  display:grid;
+  grid-template-columns:44px minmax(0,1fr) 122px 72px;
+  gap:10px;
+  align-items:center;
+  border:1px solid #2e3647;
+  border-radius:14px;
+  padding:10px 12px;
+  background:linear-gradient(180deg,#151a27,#10151f);
+}
+.freeplay-row + .freeplay-row{
+  margin-top:8px;
+}
+.freeplay-row.is-low{
+  border-color:#4f8d79;
+  box-shadow:inset 3px 0 0 #48e09f;
+}
+.freeplay-order{
+  width:30px;
+  height:30px;
+  display:grid;
+  place-items:center;
+  border-radius:10px;
+  background:#2d2343;
+  color:#d9cbff;
+  font-size:12px;
+  font-weight:900;
+}
+.freeplay-person{
+  min-width:0;
+}
+.freeplay-person b{
+  display:block;
+  overflow:hidden;
+  text-overflow:ellipsis;
+  white-space:nowrap;
+  color:#fff;
+  font-size:15px;
+  font-weight:900;
+}
+.freeplay-person small{
+  display:block;
+  margin-top:3px;
+  color:#98a3b5;
+  font-size:9px;
+}
+.freeplay-controls{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:6px;
+}
+.freeplay-plus,
+.freeplay-minus{
+  min-height:36px;
+  border-radius:11px;
+  font-size:12px;
+  font-weight:900;
+  border:1px solid transparent;
+}
+.freeplay-plus{
+  display:grid;
+  place-items:center;
+  background:linear-gradient(135deg,#9b5cff,#753cf0);
+  color:#fff;
+  border-color:#8251e6;
+}
+.freeplay-minus{
+  background:#321d29;
+  color:#ff9fc9;
+  border-color:#493041;
+}
+.freeplay-minus:disabled{
+  opacity:.25;
+  cursor:not-allowed;
+}
+.freeplay-games{
+  text-align:center;
+  padding:5px 6px;
+  border-radius:10px;
+  background:#241b37;
+}
+.freeplay-games strong{
+  display:block;
+  color:#d6bcff;
+  font-size:22px;
+  line-height:1;
+}
+.freeplay-games small{
+  color:#a99bbd;
+  font-size:9px;
+}
+
+/* override old clickable-card style from v5.9.9 */
+.freeplay-hit{display:none!important}
+
+body.font-sm .freeplay-person b{font-size:13px!important}
+body.font-sm .freeplay-games strong{font-size:19px!important}
+body.font-lg .freeplay-person b{font-size:18px!important}
+body.font-lg .freeplay-games strong{font-size:26px!important}
+
+@media(max-width:760px){
+  .freeplay-row{
+    grid-template-columns:34px minmax(0,1fr) 100px 56px;
+    gap:8px;
+    padding:8px 9px;
+  }
+  .freeplay-order{
+    width:26px;height:26px;font-size:11px;
+  }
+  .freeplay-person b{font-size:14px}
+  .freeplay-person small{font-size:8px}
+  .freeplay-controls{gap:5px}
+  .freeplay-plus,.freeplay-minus{min-height:31px;font-size:11px}
+  .freeplay-games strong{font-size:18px}
+}
+
+@media(max-width:520px){
+  .freeplay-row{
+    grid-template-columns:30px minmax(0,1fr) 90px 50px;
+    gap:6px;
+    padding:7px 8px;
+  }
+  .freeplay-plus,.freeplay-minus{min-height:28px}
+  .freeplay-games{
+    padding:4px;
+  }
+  .freeplay-games strong{font-size:16px}
+  .freeplay-games small{font-size:8px}
+}
