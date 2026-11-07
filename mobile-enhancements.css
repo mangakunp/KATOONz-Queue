@@ -1,0 +1,143 @@
+
+/* KATOONz Queue v6.0.0 — Smartphone-first layer */
+
+.pairing-mode-card{margin-bottom:14px}
+.pairing-mode-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
+.pairing-mode-head h2{margin:0 0 4px;font-size:16px}
+.pairing-mode-head p{margin:0;color:var(--muted);font-size:11px}
+.pairing-mode-badge{
+  flex:0 0 auto;background:linear-gradient(135deg,#5fbeb0,#4aa89d);
+  color:#fff;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900
+}
+.pairing-mode-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px}
+.pairing-mode-btn{
+  min-height:72px;border:1px solid var(--line);background:var(--card);color:var(--ink);
+  border-radius:13px;padding:8px 6px;display:grid;place-items:center;gap:2px;font-size:18px
+}
+.pairing-mode-btn b{font-size:11px}
+.pairing-mode-btn small{font-size:8px;color:var(--muted);line-height:1.25}
+.pairing-mode-btn.active{
+  border-color:var(--primary);background:var(--mint);
+  box-shadow:0 0 0 2px rgba(104,189,176,.13)
+}
+.pairing-mode-foot{
+  display:flex;align-items:center;justify-content:space-between;gap:10px;
+  border-top:1px solid var(--line);margin-top:10px;padding-top:9px
+}
+.pairing-mode-foot span{font-size:9px;color:var(--muted)}
+.mobile-live-strip{display:none}
+.mobile-bottom-nav{display:none}
+
+.mode-ribbon{
+  display:inline-flex;align-items:center;gap:5px;padding:3px 7px;border-radius:999px;
+  background:var(--lavender);font-size:9px;font-weight:800;color:#6a5a89;margin-top:4px
+}
+
+/* make important court actions more touch-friendly */
+.court-controls button{min-height:42px}
+.court-slot{min-height:62px}
+
+@media(max-width:760px){
+  body{padding-bottom:calc(74px + env(safe-area-inset-bottom))}
+  main{padding:8px!important}
+  .topbar{
+    height:auto!important;min-height:58px;padding:8px 10px!important;
+    gap:8px!important
+  }
+  .topbar h1{font-size:16px!important;line-height:1.15}
+  .topbar small{font-size:9px}
+  .top-status{display:none!important}
+  .font-size-tools{margin-left:auto}
+  .font-btn{min-width:36px;min-height:36px}
+  .menu-btn{min-width:42px;min-height:42px}
+
+  #todayPage .summary-grid.four{display:none!important}
+  .mobile-live-strip{
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
+    margin-bottom:8px;padding:9px 11px;border-radius:12px;
+    border:1px solid var(--line);background:var(--card);font-size:10px
+  }
+  .mobile-live-strip .online{color:#2f9c72;font-weight:900}
+  .mobile-live-strip .offline{color:#d05c66;font-weight:900}
+  .mobile-live-strip .mobile-live-stats{display:flex;gap:10px;color:var(--muted);font-weight:700}
+
+  .pairing-mode-card{padding:10px!important;margin-bottom:8px}
+  .pairing-mode-head h2{font-size:14px}
+  .pairing-mode-head p{font-size:9px}
+  .pairing-mode-badge{font-size:9px;padding:5px 8px}
+  .pairing-mode-grid{
+    grid-template-columns:repeat(5,minmax(74px,1fr));overflow-x:auto;
+    padding-bottom:3px;scrollbar-width:none
+  }
+  .pairing-mode-grid::-webkit-scrollbar{display:none}
+  .pairing-mode-btn{min-height:64px;padding:6px 4px}
+  .pairing-mode-btn b{font-size:10px}
+  .pairing-mode-btn small{font-size:7px}
+  .pairing-mode-foot{align-items:flex-start}
+  .pairing-mode-foot .soft-btn{min-height:36px;white-space:nowrap}
+
+  /* Smartphone priority: COURTS first, QUEUE second */
+  .today-layout{display:flex!important;flex-direction:column!important;gap:8px!important}
+  .court-section{order:1}
+  .queue-section{order:2}
+  .shuttle-section{order:3}
+
+  .card{border-radius:13px!important;padding:10px!important}
+  .section-head{gap:8px!important}
+  .section-head h2{font-size:14px!important}
+  .section-head p{font-size:9px!important}
+  .section-head .primary{min-height:38px;padding:7px 9px!important;font-size:10px!important}
+
+  .court-card{border-radius:13px!important;padding:9px!important}
+  .court-title{gap:6px!important}
+  .court-title input{font-size:14px!important}
+  .court-state-badge{font-size:9px!important}
+  .game-live-time{font-size:11px!important;font-weight:900}
+  .court-slots{gap:6px!important}
+  .court-slot{min-height:58px!important;padding:7px!important}
+  .court-slot b{font-size:14px!important}
+  .court-slot small{font-size:8px!important}
+  .court-controls{gap:6px!important}
+  .court-controls button{
+    min-height:46px!important;border-radius:10px!important;
+    font-size:11px!important;font-weight:900!important
+  }
+  .swap-hint{font-size:8px!important}
+
+  .queue-note{font-size:9px!important;padding:8px!important}
+  .lookahead-panel{padding:8px!important}
+  .lookahead-head b{font-size:11px!important}
+  .lookahead-head small{font-size:8px!important}
+  .lookahead-item{padding:6px!important}
+  .lookahead-item:nth-child(n+4){display:none}
+  .queue-player{padding:7px!important}
+  .queue-player-name b{font-size:14px!important}
+
+  /* Thumb-friendly member/cost controls */
+  button,.primary,.soft-btn,.danger-btn{touch-action:manipulation}
+  .member-actions button{min-height:38px}
+  input,select{min-height:42px;font-size:16px!important}
+
+  .mobile-bottom-nav{
+    display:grid;grid-template-columns:repeat(4,1fr);
+    position:fixed;z-index:80;left:8px;right:8px;
+    bottom:calc(7px + env(safe-area-inset-bottom));
+    background:rgba(20,27,35,.96);backdrop-filter:blur(14px);
+    border:1px solid #3b4654;border-radius:17px;padding:5px;
+    box-shadow:0 10px 30px rgba(0,0,0,.28)
+  }
+  .mobile-bottom-nav button{
+    border:0;background:transparent;color:#aeb9c5;border-radius:12px;
+    min-height:52px;display:grid;place-items:center;align-content:center;gap:1px
+  }
+  .mobile-bottom-nav button span{font-size:18px;line-height:1}
+  .mobile-bottom-nav button b{font-size:9px}
+  .mobile-bottom-nav button.active{background:#2d7069;color:#fff}
+
+  /* sidebar remains available from ☰ for Rules / Frequency / Backup */
+  .sidebar{z-index:100!important}
+}
+
+@media(min-width:761px) and (max-width:1100px){
+  .pairing-mode-grid{grid-template-columns:repeat(3,1fr)}
+}

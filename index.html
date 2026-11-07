@@ -10,7 +10,8 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css?v=5.9.9.2">
-  <title>KATOONz x TOMO Queue Manager v5.9.9.2</title>
+  <link rel="stylesheet" href="mobile-enhancements.css?v=6.0.0">
+  <title>KATOONz x TOMO Queue Manager v6.0.0</title>
 </head>
 <body>
 <div class="app-shell">
@@ -19,10 +20,9 @@
       <div class="brand-icon">🏸</div>
       <div>
         <b>KATOONz x TOMO</b>
-        <small>Queue Manager · v5.9.9.2</small>
+        <small>Queue Manager · v6.0.0</small>
       </div>
     </div>
-
     <nav class="side-nav">
       <button class="nav-btn active" data-page="playersPage">
         <span class="nav-icon">👥</span>
@@ -45,8 +45,8 @@
         <span><b>5 สรุปค่าใช้จ่าย</b><small>หารเท่ากันวันนี้</small></span>
       </button>
     </nav>
-<div class="sidebar-foot">
-<div class="offline-pill">● OFFLINE-FIRST</div>
+    <div class="sidebar-foot">
+      <div class="offline-pill">● SMARTPHONE-FIRST</div>
       <button id="newDayBtn" class="ghost-btn">🔄 เริ่มวันใหม่</button>
       <button id="backupBtn" class="ghost-btn">⬇️ สำรองข้อมูล</button>
       <button id="restoreBtn" class="ghost-btn">⬆️ กู้คืนข้อมูล</button>
@@ -73,15 +73,12 @@
     </header>
 
     <main>
-<!-- PAGE 1 -->
       <section id="playersPage" class="page active">
-        
         <div class="summary-grid three">
           <div class="summary-card mint"><span>สมาชิกทั้งหมด</span><strong id="allPlayerCount">0</strong><small>คน</small></div>
           <div class="summary-card lavender"><span>มาเล่นวันนี้</span><strong id="todayPlayerCountHome">0</strong><small>คน</small></div>
           <div class="summary-card cream"><span>กำลังเล่น</span><strong id="playingCountHome">0</strong><small>คน</small></div>
         </div>
-
         <section class="card">
           <div class="section-head">
             <div>
@@ -90,16 +87,13 @@
             </div>
             <button id="addMemberBtn" class="primary">＋ เพิ่มผู้เล่น</button>
           </div>
-
           <div class="toolbar">
             <input id="playerSearch" placeholder="🔎 ค้นหาชื่อผู้เล่น...">
           </div>
-
           <div id="memberList" class="member-list"></div>
         </section>
       </section>
-      
-      <!-- PAGE 2 -->
+
       <section id="rulesPage" class="page">
         <section class="card rules-page-card">
           <div class="section-head">
@@ -112,11 +106,9 @@
               <span>เปิดใช้กฎ</span>
             </label>
           </div>
-
           <div class="queue-note">
             กฎทั้งหมดบังคับใช้จริง: <b>คู่กันตลอดไม่แยกเล่น</b> · <b>คู่กันถ้าได้เล่นเกมเดียวกัน</b> · <b>ไม่เล่นในเกมเดียวกัน</b> · <b>อยู่ตรงข้ามกันถ้าเล่นเกมเดียวกัน</b>
           </div>
-
           <div class="rules-toolbar">
             <select id="ruleType">
               <option value="always_partner">🔒 คู่กันตลอดไม่แยกเล่น</option>
@@ -129,14 +121,14 @@
             <select id="rulePlayerB"></select>
             <button id="addRuleBtn" class="primary">＋ เพิ่มกฎ</button>
           </div>
-
           <div id="rulesList" class="rules-list"></div>
           <div id="ruleConflictBox" class="rule-conflict hidden"></div>
         </section>
       </section>
 
-      <!-- PAGE 3 -->
       <section id="todayPage" class="page">
+        <div id="mobileLiveStrip" class="mobile-live-strip" aria-live="polite"></div>
+
         <div class="summary-grid four">
           <div class="summary-card mint"><span>มาวันนี้</span><strong id="todayCount">0</strong><small>คน</small></div>
           <div class="summary-card sky"><span>กำลังเล่น</span><strong id="playingCount">0</strong><small>คน</small></div>
@@ -144,24 +136,52 @@
           <div class="summary-card cream"><span>ลูกที่ใช้</span><strong id="shuttleSummary">0</strong><small>ลูก</small></div>
         </div>
 
-        <div class="today-layout">
-          
+        <section id="pairingModeCard" class="card pairing-mode-card">
+          <div class="pairing-mode-head">
+            <div>
+              <h2>🧠 โหมดการจัดคู่</h2>
+              <p id="pairingModeDesc">สมดุลเวลารอ + ลดคู่ซ้ำและคู่แข่งซ้ำ</p>
+            </div>
+            <span id="pairingModeBadge" class="pairing-mode-badge">⚖️ สมดุล</span>
+          </div>
+          <div class="pairing-mode-grid">
+            <button type="button" class="pairing-mode-btn active" data-pair-mode="balanced">⚖️<b>สมดุล</b><small>รอนาน + ลดซ้ำ</small></button>
+            <button type="button" class="pairing-mode-btn" data-pair-mode="newpeople">🆕<b>เจอคนใหม่</b><small>ลดการเจอคนเดิม</small></button>
+            <button type="button" class="pairing-mode-btn" data-pair-mode="nopartner">🔁<b>คู่ไม่ซ้ำ</b><small>หลบพาร์ตเนอร์เดิม</small></button>
+            <button type="button" class="pairing-mode-btn" data-pair-mode="random">🎲<b>สุ่มสนุก</b><small>สุ่มในกลุ่มต้นคิว</small></button>
+            <button type="button" class="pairing-mode-btn" data-pair-mode="manual">✋<b>กำหนดเอง</b><small>เรียกแล้วแตะสลับ</small></button>
+          </div>
+          <div class="pairing-mode-foot">
+            <span>Custom Pairing Rules ยังมีผลเหนือโหมดเหล่านี้เสมอ</span>
+            <button id="openRulesFromMode" type="button" class="soft-btn">🧩 ตั้งกฎเฉพาะ</button>
+          </div>
+        </section>
 
-          <section class="card queue-section">
+        <div class="today-layout">
+          <section class="card queue-section" id="mobileQueueAnchor">
             <div class="section-head">
               <div>
                 <h2>⏱ คิวผู้เล่นวันนี้</h2>
-                <p>Smart Rotation: คนรอนานสุดก่อน และพยายามไม่ให้คู่/คู่แข่งซ้ำบ่อย</p>
+                <p>เลือก 4 คนตามโหมดที่ตั้งไว้ และรักษาความเป็นธรรมของเวลารอ</p>
               </div>
             </div>
-            <div class="queue-note">
-      🤖 Smart Rotation แบบ Offline — เลือก 4 คนที่รอนานที่สุดก่อนเสมอ
-      จากนั้นค่อยจัดคู่โดยลด “คู่เดิม” และ “คนที่เพิ่งเจอกัน”
-    </div><div class="lookahead-panel"><div class="lookahead-head"><div><b>🔮 คิวล่วงหน้า</b><small>Round‑Robin Mixer: ลดกลุ่มเดิม คู่เดิม และคนเดิมเจอบ่อย</small></div><button id="rebuildPlanBtn" class="soft-btn">จัดคิวใหม่</button></div><div id="lookaheadList" class="lookahead-list"></div></div>
+            <div class="queue-note" id="smartRotationNote">
+              🤖 ระบบจะเลือกกลุ่มและจัดคู่ตามโหมดด้านบน
+            </div>
+            <div class="lookahead-panel">
+              <div class="lookahead-head">
+                <div>
+                  <b>🔮 คิวล่วงหน้า</b>
+                  <small id="lookaheadModeNote">เตรียมเกมถัดไปตามโหมดการจัดคู่</small>
+                </div>
+                <button id="rebuildPlanBtn" class="soft-btn">จัดคิวใหม่</button>
+              </div>
+              <div id="lookaheadList" class="lookahead-list"></div>
+            </div>
             <div id="todayQueue" class="queue-list"></div>
           </section>
 
-          <section class="card court-section">
+          <section class="card court-section" id="mobileCourtAnchor">
             <div class="section-head">
               <div>
                 <h2>🏟️ สนาม</h2>
@@ -189,20 +209,12 @@
         </div>
       </section>
 
-      <!-- PAGE 4 : FREE PLAY FREQUENCY -->
       <section id="freePlayPage" class="page">
         <div class="summary-grid three">
-          <div class="summary-card lavender">
-            <span>มาวันนี้</span><strong id="freePlayTodayCount">0</strong><small>คน</small>
-          </div>
-          <div class="summary-card mint">
-            <span>เล่นน้อยสุด</span><strong id="freePlayMin">0</strong><small>เกม</small>
-          </div>
-          <div class="summary-card cream">
-            <span>เล่นมากสุด</span><strong id="freePlayMax">0</strong><small>เกม</small>
-          </div>
+          <div class="summary-card lavender"><span>มาวันนี้</span><strong id="freePlayTodayCount">0</strong><small>คน</small></div>
+          <div class="summary-card mint"><span>เล่นน้อยสุด</span><strong id="freePlayMin">0</strong><small>เกม</small></div>
+          <div class="summary-card cream"><span>เล่นมากสุด</span><strong id="freePlayMax">0</strong><small>เกม</small></div>
         </div>
-
         <section class="card freeplay-card">
           <div class="section-head">
             <div>
@@ -210,21 +222,17 @@
               <p>ก่อนลงสนาม ใช้ปุ่ม +1 / −1 เพื่อบันทึกจำนวนเกม · ระบบเรียงคนที่เล่นน้อยสุดไว้ก่อน</p>
             </div>
           </div>
-
           <div class="freeplay-note">
             🏸 ใช้ในวันที่ไม่ต้องจัดคู่ — ใครอยากลงก็ลงได้ แต่ดูจำนวนเกมเพื่อให้ทุกคนได้เล่นใกล้เคียงกัน
             <br><b>ตัวเลขใช้ร่วมกับจำนวนเกมใน “การเล่นวันนี้”</b>
           </div>
-
           <div class="freeplay-toolbar">
             <input id="freePlaySearch" placeholder="🔎 ค้นหาชื่อตัวเอง...">
           </div>
-
           <div id="freePlayList" class="freeplay-list"></div>
         </section>
       </section>
 
-      <!-- PAGE 5 -->
       <section id="costPage" class="page">
         <div class="cost-layout">
           <section class="card">
@@ -234,34 +242,27 @@
                 <p>คำนวณแบบหารเท่ากันตามจำนวนผู้เล่นที่มา</p>
               </div>
             </div>
-
             <div class="form-grid cost-form-grid">
-              <label class="full-row">
-                ราคาค่าสนาม / ชั่วโมง / สนาม (บาท)
+              <label class="full-row">ราคาค่าสนาม / ชั่วโมง / สนาม (บาท)
                 <input id="courtRate" type="number" min="0" step="1" value="120">
               </label>
-              <label>
-                จำนวนสนามที่คิดเงิน
+              <label>จำนวนสนามที่คิดเงิน
                 <div class="inline-counter">
                   <button type="button" id="costCourtMinus">−</button>
                   <input id="costCourtCount" type="number" min="0" step="1" value="2">
                   <button type="button" id="costCourtPlus">＋</button>
                 </div>
               </label>
-              <label>
-                จำนวนชั่วโมงที่เล่น
+              <label>จำนวนชั่วโมงที่เล่น
                 <input id="hoursPlayed" type="number" min="0" step="0.5" value="2">
               </label>
-              <label>
-                ราคาลูกแบด / ลูก (บาท)
+              <label>ราคาลูกแบด / ลูก (บาท)
                 <input id="shuttleRate" type="number" min="0" step="1" value="45">
               </label>
-              <label>
-                ค่าใช้จ่ายอื่น ๆ (บาท)
+              <label>ค่าใช้จ่ายอื่น ๆ (บาท)
                 <input id="otherCost" type="number" min="0" step="1" value="0">
               </label>
             </div>
-
             <div class="qr-section">
               <div>
                 <h3>📱 QR-Code รับเงิน</h3>
@@ -285,110 +286,66 @@
                 <p id="costDate"></p>
               </div>
             </div>
-
-            <div class="receipt-line">
-              <span>ค่าสนาม</span>
-              <span id="courtCostText">0 บาท</span>
-            </div>
+            <div class="receipt-line"><span>ค่าสนาม</span><span id="courtCostText">0 บาท</span></div>
             <small id="courtFormula" class="formula"></small>
-
-            <div class="receipt-line">
-              <span>ค่าลูกแบด</span>
-              <span id="shuttleCostText">0 บาท</span>
-            </div>
+            <div class="receipt-line"><span>ค่าลูกแบด</span><span id="shuttleCostText">0 บาท</span></div>
             <small id="shuttleFormula" class="formula"></small>
-
-            <div class="receipt-line">
-              <span>ค่าใช้จ่ายอื่น ๆ</span>
-              <span id="otherCostText">0 บาท</span>
-            </div>
-
-            <div class="receipt-total">
-              <span>รวมทั้งหมด</span>
-              <strong id="totalCostText">0 บาท</strong>
-            </div>
-
-            <div class="receipt-line">
-              <span>จำนวนผู้เล่นวันนี้</span>
-              <strong id="costPlayerCount">0 คน</strong>
-            </div>
-
-            <div class="per-person">
-              <span>หารเท่ากัน คนละ</span>
-              <strong id="perPersonText">0.00 บาท</strong>
-            </div>
+            <div class="receipt-line"><span>ค่าใช้จ่ายอื่น ๆ</span><span id="otherCostText">0 บาท</span></div>
+            <div class="receipt-total"><span>รวมทั้งหมด</span><strong id="totalCostText">0 บาท</strong></div>
+            <div class="receipt-line"><span>จำนวนผู้เล่นวันนี้</span><strong id="costPlayerCount">0 คน</strong></div>
+            <div class="per-person"><span>หารเท่ากัน คนละ</span><strong id="perPersonText">0.00 บาท</strong></div>
           </section>
         </div>
 
-          
+        <section class="card timing-summary-card">
+          <div class="section-head"><div><h2>⏱️ Game Time Tracking</h2>
+          <p>จับเวลาจริงตั้งแต่กด “เล่น” จนถึง “จบเกม” และใช้เวลาจริงประมาณ ETA ของคิว</p></div></div>
+          <div id="timingSummary" class="timing-summary"></div>
+        </section>
 
-
-
-<section class="card timing-summary-card">
-  <div class="section-head"><div><h2>⏱️ Game Time Tracking</h2>
-  <p>จับเวลาจริงตั้งแต่กด “เล่น” จนถึง “จบเกม” และใช้เวลาจริงประมาณ ETA ของคิว</p></div></div>
-  <div id="timingSummary" class="timing-summary"></div>
-</section>
-
-<section class="card history-card">
-            <div class="section-head">
-              <div>
-                <h2>📊 ประวัติการเล่น</h2>
-                <p>บันทึกอัตโนมัติทุกครั้งที่จบเกม และเก็บสรุปไว้ดูย้อนหลัง</p>
-              </div>
-              <div class="history-tabs">
-                <button class="history-tab active" data-history="daily">รายวัน</button>
-                <button class="history-tab" data-history="weekly">รายสัปดาห์</button>
-              </div>
+        <section class="card history-card">
+          <div class="section-head">
+            <div>
+              <h2>📊 ประวัติการเล่น</h2>
+              <p>บันทึกอัตโนมัติทุกครั้งที่จบเกม และเก็บสรุปไว้ดูย้อนหลัง</p>
             </div>
-
-            <div id="dailyHistoryPanel" class="history-panel active">
-              <div id="dailyHistoryList" class="history-list"></div>
+            <div class="history-tabs">
+              <button class="history-tab active" data-history="daily">รายวัน</button>
+              <button class="history-tab" data-history="weekly">รายสัปดาห์</button>
             </div>
-
-            <div id="weeklyHistoryPanel" class="history-panel">
-              <div id="weeklyHistoryList" class="history-list"></div>
-            </div>
-          </section>
-
+          </div>
+          <div id="dailyHistoryPanel" class="history-panel active"><div id="dailyHistoryList" class="history-list"></div></div>
+          <div id="weeklyHistoryPanel" class="history-panel"><div id="weeklyHistoryList" class="history-list"></div></div>
+        </section>
       </section>
     </main>
   </div>
 </div>
 
-<!-- Member modal -->
 <div id="memberModal" class="modal hidden">
   <div class="modal-bg"></div>
   <div class="modal-card">
     <div class="modal-head"><h3 id="memberModalTitle">เพิ่มผู้เล่น</h3><button class="modal-close">×</button></div>
     <label>ชื่อผู้เล่น<input id="memberNameInput" placeholder="เช่น K'T"></label>
     <div class="legacy-level-compat" aria-hidden="true">
-      <select id="memberLvSelect" tabindex="-1">
-        <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
-      </select>
+      <select id="memberLvSelect" tabindex="-1"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select>
     </div>
     <button id="saveMemberBtn" class="primary wide">บันทึก</button>
   </div>
 </div>
 
-<!-- Quick edit modal -->
 <div id="quickEditModal" class="modal hidden">
   <div class="modal-bg"></div>
   <div class="modal-card">
     <div class="modal-head"><h3 id="quickEditTitle">แก้ไขผู้เล่น</h3><button class="modal-close">×</button></div>
-    <div id="quickNameBlock">
-      <label>ชื่อผู้เล่น<input id="quickNameInput"></label>
-    </div>
+    <div id="quickNameBlock"><label>ชื่อผู้เล่น<input id="quickNameInput"></label></div>
     <div id="quickLevelBlock" class="legacy-level-compat" aria-hidden="true">
-      <select id="quickLvSelect" tabindex="-1">
-        <option value="1">1</option><option value="2" selected>2</option><option value="3">3</option>
-      </select>
+      <select id="quickLvSelect" tabindex="-1"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select>
     </div>
     <button id="saveQuickEditBtn" class="primary wide">บันทึก</button>
   </div>
 </div>
 
-<!-- Replace player modal -->
 <div id="replaceModal" class="modal hidden">
   <div class="modal-bg"></div>
   <div class="modal-card">
@@ -398,10 +355,14 @@
   </div>
 </div>
 
+<nav id="mobileBottomNav" class="mobile-bottom-nav" aria-label="เมนูมือถือ">
+  <button type="button" data-mobile-go="queue"><span>🏸</span><b>คิว</b></button>
+  <button type="button" data-mobile-go="courts"><span>🏟️</span><b>สนาม</b></button>
+  <button type="button" data-mobile-go="players"><span>👥</span><b>สมาชิก</b></button>
+  <button type="button" data-mobile-go="cost"><span>💰</span><b>ค่าใช้จ่าย</b></button>
+</nav>
 
 <script src="app.js?v=5.9.9.2"></script>
-
-
-
+<script src="mobile-enhancements.js?v=6.0.0"></script>
 </body>
 </html>
