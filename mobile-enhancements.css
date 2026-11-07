@@ -1,5 +1,5 @@
 
-/* KATOONz Queue v6.0.0 — Smartphone-first layer */
+/* KATOONz Queue v6.0.3 — Smartphone-first layer */
 
 .pairing-mode-card{margin-bottom:14px}
 .pairing-mode-head{display:flex;align-items:flex-start;justify-content:space-between;gap:12px}
@@ -9,7 +9,7 @@
   flex:0 0 auto;background:linear-gradient(135deg,#5fbeb0,#4aa89d);
   color:#fff;border-radius:999px;padding:7px 10px;font-size:11px;font-weight:900
 }
-.pairing-mode-grid{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:8px;margin-top:12px}
+.pairing-mode-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:8px;margin-top:12px}
 .pairing-mode-btn{
   min-height:72px;border:1px solid var(--line);background:var(--card);color:var(--ink);
   border-radius:13px;padding:8px 6px;display:grid;place-items:center;gap:2px;font-size:18px
@@ -66,7 +66,7 @@
   .pairing-mode-head p{font-size:9px}
   .pairing-mode-badge{font-size:9px;padding:5px 8px}
   .pairing-mode-grid{
-    grid-template-columns:repeat(5,minmax(74px,1fr));overflow-x:auto;
+    grid-template-columns:repeat(6,minmax(74px,1fr));overflow-x:auto;
     padding-bottom:3px;scrollbar-width:none
   }
   .pairing-mode-grid::-webkit-scrollbar{display:none}
@@ -140,4 +140,71 @@
 
 @media(min-width:761px) and (max-width:1100px){
   .pairing-mode-grid{grid-template-columns:repeat(3,1fr)}
+}
+
+
+/* ===== v6.0.3 Player Level Lv.1–Lv.4 ===== */
+.level-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:42px;
+  padding:3px 7px;
+  border-radius:999px;
+  font-size:9px;
+  font-weight:900;
+  margin-left:6px;
+  vertical-align:middle;
+  border:1px solid transparent;
+}
+.level-badge.lv1{background:#fde7ef;color:#a44d6a;border-color:#f3b8ca}
+.level-badge.lv2{background:#e4f4e8;color:#397654;border-color:#aed8b9}
+.level-badge.lv3{background:#efe4d8;color:#805a3e;border-color:#d5b89f}
+.level-badge.lv4{background:#ece8fb;color:#604b99;border-color:#c8bdf1}
+.member-level-line{
+  display:flex;
+  align-items:center;
+  gap:4px;
+  flex-wrap:wrap;
+}
+#memberLvSelect,#quickLvSelect{
+  width:100%;
+  min-height:44px;
+  border:1px solid var(--line);
+  border-radius:10px;
+  background:var(--card);
+  color:var(--ink);
+  padding:8px 10px;
+  margin-top:5px;
+}
+
+
+/* ===== v6.0.3 Level Balance ===== */
+.level-balance-note{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin-top:4px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#eef4ff;
+  color:#536b93;
+  border:1px solid #cfdbef;
+  font-size:8px;
+  font-weight:900;
+}
+
+/* ===== v6.0.3 Skill Band grouping ===== */
+.skill-band-note{
+  display:inline-flex;
+  align-items:center;
+  gap:5px;
+  margin-top:4px;
+  padding:3px 7px;
+  border-radius:999px;
+  background:#f3f0ff;
+  color:#66518f;
+  border:1px solid #d8cff0;
+  font-size:8px;
+  font-weight:900;
 }

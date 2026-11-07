@@ -10,8 +10,8 @@
   <link rel="manifest" href="manifest.webmanifest">
   <link rel="apple-touch-icon" href="icon-192.png">
   <link rel="stylesheet" href="style.css?v=5.9.9.2">
-  <link rel="stylesheet" href="mobile-enhancements.css?v=6.0.0">
-  <title>KATOONz x TOMO Queue Manager v6.0.0</title>
+  <link rel="stylesheet" href="mobile-enhancements.css?v=6.0.3">
+  <title>KATOONz x TOMO Queue Manager v6.0.3</title>
 </head>
 <body>
 <div class="app-shell">
@@ -20,7 +20,7 @@
       <div class="brand-icon">🏸</div>
       <div>
         <b>KATOONz x TOMO</b>
-        <small>Queue Manager · v6.0.0</small>
+        <small>Queue Manager · v6.0.3</small>
       </div>
     </div>
     <nav class="side-nav">
@@ -146,6 +146,7 @@
           </div>
           <div class="pairing-mode-grid">
             <button type="button" class="pairing-mode-btn active" data-pair-mode="balanced">⚖️<b>สมดุล</b><small>รอนาน + ลดซ้ำ</small></button>
+            <button type="button" class="pairing-mode-btn" data-pair-mode="levelbalance">💪<b>บาลานซ์มือ</b><small>Lv. ใกล้กันทั้งเกม</small></button>
             <button type="button" class="pairing-mode-btn" data-pair-mode="newpeople">🆕<b>เจอคนใหม่</b><small>ลดการเจอคนเดิม</small></button>
             <button type="button" class="pairing-mode-btn" data-pair-mode="nopartner">🔁<b>คู่ไม่ซ้ำ</b><small>หลบพาร์ตเนอร์เดิม</small></button>
             <button type="button" class="pairing-mode-btn" data-pair-mode="random">🎲<b>สุ่มสนุก</b><small>สุ่มในกลุ่มต้นคิว</small></button>
@@ -327,9 +328,14 @@
   <div class="modal-card">
     <div class="modal-head"><h3 id="memberModalTitle">เพิ่มผู้เล่น</h3><button class="modal-close">×</button></div>
     <label>ชื่อผู้เล่น<input id="memberNameInput" placeholder="เช่น K'T"></label>
-    <div class="legacy-level-compat" aria-hidden="true">
-      <select id="memberLvSelect" tabindex="-1"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select>
-    </div>
+    <label>ระดับมือ
+      <select id="memberLvSelect">
+        <option value="1">Lv.1 — เริ่มต้น</option>
+        <option value="2" selected>Lv.2 — พื้นฐาน</option>
+        <option value="3">Lv.3 — กลาง</option>
+        <option value="4">Lv.4 — แข็งแรง</option>
+      </select>
+    </label>
     <button id="saveMemberBtn" class="primary wide">บันทึก</button>
   </div>
 </div>
@@ -339,8 +345,15 @@
   <div class="modal-card">
     <div class="modal-head"><h3 id="quickEditTitle">แก้ไขผู้เล่น</h3><button class="modal-close">×</button></div>
     <div id="quickNameBlock"><label>ชื่อผู้เล่น<input id="quickNameInput"></label></div>
-    <div id="quickLevelBlock" class="legacy-level-compat" aria-hidden="true">
-      <select id="quickLvSelect" tabindex="-1"><option value="1">1</option><option value="2" selected>2</option><option value="3">3</option></select>
+    <div id="quickLevelBlock">
+      <label>ระดับมือ
+        <select id="quickLvSelect">
+          <option value="1">Lv.1 — เริ่มต้น</option>
+          <option value="2">Lv.2 — พื้นฐาน</option>
+          <option value="3">Lv.3 — กลาง</option>
+          <option value="4">Lv.4 — แข็งแรง</option>
+        </select>
+      </label>
     </div>
     <button id="saveQuickEditBtn" class="primary wide">บันทึก</button>
   </div>
@@ -363,6 +376,6 @@
 </nav>
 
 <script src="app.js?v=5.9.9.2"></script>
-<script src="mobile-enhancements.js?v=6.0.0"></script>
+<script src="mobile-enhancements.js?v=6.0.3"></script>
 </body>
 </html>
